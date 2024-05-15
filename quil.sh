@@ -55,7 +55,7 @@ function install_node() {
 
 	# 安装GVM
 	bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
-	source /root/.gvm/scripts/gvm
+	source $HOME/.gvm/scripts/gvm
 	
 	gvm install go1.4 -B
 	gvm use go1.4
@@ -75,7 +75,7 @@ function install_node() {
 	screen -dmS quil bash -c './poor_mans_cd.sh'
 
 	# 设置守护
-	script_path="/root/check_and_restart.sh"
+	script_path="$HOME/check_and_restart.sh"
 	wget -O $script_path https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/check_and_restart.sh && chmod +x $script_path
 	(crontab -l 2>/dev/null; echo "*/30 * * * * $script_path") | crontab -
 
@@ -86,8 +86,8 @@ function install_node() {
 function backup_key(){
 
     # 文件路径
-	file_path_keys="/root/ceremonyclient/node/.config/keys.yml"
-	file_path_config="/root/ceremonyclient/node/.config/config.yml"
+	file_path_keys="$HOME/ceremonyclient/node/.config/keys.yml"
+	file_path_config="$HOME/ceremonyclient/node/.config/config.yml"
 	
 	# 检查文件是否存在
 	if [ -f "$file_path_keys" ]; then
@@ -127,8 +127,8 @@ function view_status(){
 function uninstall_node(){
 
     screen -S quil -X quit
-	rm -rf /$HOME/ceremonyclient
-	rm -rf /$HOME/check_and_restart.sh
+	rm -rf $HOME/ceremonyclient
+	rm -rf $HOME/check_and_restart.sh
 	echo "卸载完成。"
 
 }
