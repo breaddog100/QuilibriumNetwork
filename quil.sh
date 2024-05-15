@@ -91,13 +91,13 @@ function backup_key(){
 	
 	# 检查文件是否存在
 	if [ -f "$file_path_keys" ]; then
-	    echo "keys文件已生成，路径为: $file_path，请尽快备份"
+	    echo "keys文件已生成，路径为: $file_path_keys，请尽快备份"
 	else
 	    echo "keys文件未生成，请等待..."
 	fi
 	# 检查文件是否存在
 	if [ -f "$file_path_config" ]; then
-	    echo "config文件已生成，路径为: $file_path，请尽快备份"
+	    echo "config文件已生成，路径为: $file_path_config，请尽快备份"
 	else
 	    echo "config文件未生成，请等待..."
 	fi
