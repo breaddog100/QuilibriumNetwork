@@ -146,6 +146,14 @@ function uninstall_node(){
 
 }
 
+# 查询Peer ID
+function check_peer_id(){
+	source /root/.gvm/scripts/gvm
+	gvm use go1.20.2
+	cd $HOME/ceremonyclient/node/ && GOEXPERIMENT=arenas go run ./... -peer-id
+	echo "浏览器打开：https://quilibrium.com/rewards/ ，在左侧输入Peer ID查询"
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -160,7 +168,8 @@ function main_menu() {
 	    echo "4. 查看日志 view_logs"
 	    echo "5. 停止节点 stop_node"
 	    echo "6. 启动节点 start_node"
-	    echo "7. 卸载节点 uninstall_node"
+	    echo "7. 查询PeerID check_peer_id"
+	    echo "8. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -171,7 +180,8 @@ function main_menu() {
 	    4) view_logs ;;
 	    5) stop_node ;;
 	    6) start_node ;;
-	    7) uninstall_node ;;
+	    7) check_peer_id ;;
+	    8) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
