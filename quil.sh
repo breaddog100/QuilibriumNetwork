@@ -126,11 +126,13 @@ function view_status(){
 # 停止节点
 function stop_node(){
 	screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
+	echo "quil 节点已停止"
 }
 
 # 启动节点
 function start_node(){
 	$HOME/check_and_restart.sh
+	echo "quil 节点已启动"
 }
 
 # 卸载节点
@@ -156,7 +158,9 @@ function main_menu() {
 	    echo "2. 提取秘钥 backup_key"
 	    echo "3. 查看状态 view_status"
 	    echo "4. 查看日志 view_logs"
-	    echo "5. 卸载节点 uninstall_node"
+	    echo "5. 停止节点 stop_node"
+	    echo "6. 启动节点 start_node"
+	    echo "7. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -165,7 +169,9 @@ function main_menu() {
 	    2) backup_key ;;
 	    3) view_status ;;
 	    4) view_logs ;;
-	    5) uninstall_node ;;
+	    5) stop_node ;;
+	    6) start_node ;;
+	    7) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
