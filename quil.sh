@@ -123,10 +123,21 @@ function view_status(){
 	fi
 }
 
+# 停止节点
+function stop_node(){
+	screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
+}
+
+# 启动节点
+function start_node(){
+	$HOME/check_and_restart.sh
+}
+
 # 卸载节点
 function uninstall_node(){
 
-    screen -S quil -X quit
+    #screen -S quil -X quit
+    screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
 	rm -rf $HOME/ceremonyclient
 	rm -rf $HOME/check_and_restart.sh
 	echo "卸载完成。"
