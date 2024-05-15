@@ -76,7 +76,7 @@ function install_node() {
 
 	# 设置守护
 	script_path="/root/check_and_restart.sh"
-	wget -O $script_path https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/check_and_restart.sh && chmod +x check_and_restart.sh
+	wget -O $script_path https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/check_and_restart.sh && chmod +x $script_path
 	(crontab -l 2>/dev/null; echo "*/30 * * * * $script_path") | crontab -
 
 	echo "部署完成，然后开始挖矿"
@@ -93,13 +93,13 @@ function backup_key(){
 	if [ -f "$file_path_keys" ]; then
 	    echo "keys文件已生成，路径为: $file_path，请尽快备份"
 	else
-	    echo "keys文件未生成，请等待"
+	    echo "keys文件未生成，请等待..."
 	fi
 	# 检查文件是否存在
 	if [ -f "$file_path_config" ]; then
 	    echo "config文件已生成，路径为: $file_path，请尽快备份"
 	else
-	    echo "config文件未生成，请等待"
+	    echo "config文件未生成，请等待..."
 	fi
 
 }
@@ -114,7 +114,13 @@ function view_logs(){
 
 # 查看节点状态
 function view_status(){
-	tail -96 /var/log/my_program.log
+	
+	quil_log="/var/log/my_program.log"
+	if [ -f "$quil_log" ]; then
+	tail -96 $quil_log
+	else
+		echo "日志文件需要30分钟后生成请等待..."
+	fi
 }
 
 # 卸载节点
@@ -123,6 +129,7 @@ function uninstall_node(){
     screen -S quil -X quit
 	rm -rf /$HOME/ceremonyclient
 	rm -rf /$HOME/check_and_restart.sh
+	echo "卸载完成。"
 
 }
 
