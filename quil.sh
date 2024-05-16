@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# 检查脚本是否以root权限执行
-if [[ $EUID -ne 0 ]]; then
-   echo "此脚本需要root权限运行"
-   exit 1
-fi
-
 # 节点安装功能
 function install_node() {
 	
@@ -24,18 +18,18 @@ function install_node() {
 	
 	    # 如果当前没有swap，创建一个新的swap文件
 	    if [[ $swap_size -eq 0 ]]; then
-	        fallocate -l ${desired_swap_size}G /swapfile
-	        chmod 600 /swapfile
-	        mkswap /swapfile
-	        swapon /swapfile
+	        sudo fallocate -l ${desired_swap_size}G /swapfile
+	        sudo chmod 600 /swapfile
+	        sudo mkswap /swapfile
+	        sudo swapon /swapfile
 	        echo '/swapfile none swap sw 0 0' >> /etc/fstab
 	    else
 	        # 如果swap已存在，先关闭再重新设置大小
-	        swapoff -a
-	        fallocate -l ${desired_swap_size}G /swapfile
-	        chmod 600 /swapfile
-	        mkswap /swapfile
-	        swapon -a
+	        sudo swapoff -a
+	        sudo fallocate -l ${desired_swap_size}G /swapfile
+	        sudo chmod 600 /swapfile
+	        sudo mkswap /swapfile
+	        sudo swapon -a
 	        echo '/swapfile none swap sw 0 0' >> /etc/fstab
 	    fi
 	
