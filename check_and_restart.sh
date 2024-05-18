@@ -7,7 +7,8 @@ LOGFILE="/var/log/my_program.log"
 NOW=$(date '+%F %T')
 
 # 检查程序是否正在运行
-process=$(ps -ef | grep '/tmp/go-build' | grep -v grep)
+#process=$(ps -ef | grep '/tmp/go-build' | grep -v grep)
+process=$(screen -ls | grep 'quil')
 
 # 如果进程不存在，则重启程序
 if [ -z "$process" ]; then
