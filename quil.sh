@@ -148,6 +148,39 @@ function check_peer_id(){
 	echo "浏览器打开：https://quilibrium.com/rewards/ ，在左侧输入Peer ID查询"
 }
 
+# 下载快照
+function download_snap(){
+	echo "快照文件较大，下载需要较长时间，请保持电脑屏幕不要熄灭"
+    # 下载快照
+    if wget -P $HOME/ https://snapshots.cherryservers.com/quilibrium/store.zip ;
+    then
+        stop_node
+        unzip store.zip -d $HOME/ceremonyclient/node/.config/
+    	start_node
+    	echo "快照已更新，超过30分钟高度没有增加请运行10.更新REPAIR文件"
+    else
+        echo "下载失败。"
+        exit 1
+    fi
+}
+
+# 更新REPAIR
+function update_repair(){
+	echo "快照文件较大，下载需要较长时间，请保持电脑屏幕不要熄灭"
+    # 备份REPAIR
+    stop_node
+    cp $HOME/ceremonyclient/node/.config/REPAIR $HOME/REPAIR.bak
+    # 下载REPAIR
+    if wget -O $HOME/ceremonyclient/node/.config/REPAIR 'https://2040319038-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FwYHoFaVat0JopE1zxmDI%2Fuploads%2FJL4Ytu5OIWHbisIbZs8v%2FREPAIR?alt=media&token=d080b681-ee26-470c-baae-4723bcf018a3' ;
+    then
+    	start_node
+    	echo "REPAIR已更新..."
+    else
+        echo "下载失败。"
+        exit 1
+    fi
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -164,6 +197,8 @@ function main_menu() {
 	    echo "6. 启动节点 start_node"
 	    echo "7. 查询PeerID check_peer_id"
 	    echo "8. 卸载节点 uninstall_node"
+	    echo "9. 下载快照 download_snap"
+	    echo "10. 更新REPAIR update_repair"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -176,6 +211,8 @@ function main_menu() {
 	    6) start_node ;;
 	    7) check_peer_id ;;
 	    8) uninstall_node ;;
+	    9) download_snap ;;
+	    10) update_repair ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
