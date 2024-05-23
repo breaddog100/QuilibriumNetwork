@@ -42,10 +42,10 @@ function install_node() {
     sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils
 
 	# 设置缓存
-	echo -e "\n\n# set for Quil " >> /etc/sysctl.conf
-	echo "net.core.rmem_max=600000000" >> /etc/sysctl.conf
-	echo "net.core.wmem_max=600000000" >> /etc/sysctl.conf
-	sysctl -p
+	sudo echo -e "\n\n# set for Quil " >> /etc/sysctl.conf
+	sudo echo "net.core.rmem_max=600000000" >> /etc/sysctl.conf
+	sudo echo "net.core.wmem_max=600000000" >> /etc/sysctl.conf
+	sudo sysctl -p
 
 	# 安装GVM
 	bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
@@ -154,6 +154,20 @@ function download_snap(){
     # 下载快照
     if wget -P $HOME/ https://snapshots.cherryservers.com/quilibrium/store.zip ;
     then
+    	# 检查unzip是否已安装
+		if ! command -v unzip &> /dev/null
+		then
+		    # 安装unzip
+		    sudo apt-get update && sudo apt-get install -y unzip
+		    if [ $? -eq 0 ]; then
+		        echo "unzip has been successfully installed."
+		    else
+		        echo "Failed to install unzip. Please check your package manager settings."
+		        exit 1
+		    fi
+		else
+		    echo "unzip is already installed."
+		fi
         stop_node
         unzip store.zip -d $HOME/ceremonyclient/node/.config/
     	start_node
