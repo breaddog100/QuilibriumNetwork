@@ -39,14 +39,13 @@ function install_node() {
 	fi
 	
     sudo apt update
-    sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils
+    sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils jq
 
 	# 设置缓存
 	echo -e "\n\n# set for Quil" | sudo tee -a /etc/sysctl.conf
 	echo "net.core.rmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	echo "net.core.wmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	sudo sysctl -p
-
 	# 安装GVM
 	bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
 	source $HOME/.gvm/scripts/gvm
