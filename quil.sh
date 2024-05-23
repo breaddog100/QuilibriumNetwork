@@ -22,7 +22,7 @@ function install_node() {
 	        sudo chmod 600 /swapfile
 	        sudo mkswap /swapfile
 	        sudo swapon /swapfile
-	        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+	        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 	    else
 	        # 如果swap已存在，先关闭再重新设置大小
 	        sudo swapoff -a
@@ -30,7 +30,7 @@ function install_node() {
 	        sudo chmod 600 /swapfile
 	        sudo mkswap /swapfile
 	        sudo swapon -a
-	        echo '/swapfile none swap sw 0 0' >> /etc/fstab
+	        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 	    fi
 	
 	    echo "Swap大小已设置为 $desired_swap_size GB。"
@@ -42,9 +42,9 @@ function install_node() {
     sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils
 
 	# 设置缓存
-	sudo echo -e "\n\n# set for Quil " >> /etc/sysctl.conf
-	sudo echo "net.core.rmem_max=600000000" >> /etc/sysctl.conf
-	sudo echo "net.core.wmem_max=600000000" >> /etc/sysctl.conf
+	echo -e "\n\n# set for Quil" | sudo tee -a /etc/sysctl.conf
+	echo "net.core.rmem_max=600000000" | sudo tee -a /etc/sysctl.conf
+	echo "net.core.wmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	sudo sysctl -p
 
 	# 安装GVM
