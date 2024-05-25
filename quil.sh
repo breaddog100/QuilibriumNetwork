@@ -46,6 +46,11 @@ function install_node() {
 	echo "net.core.rmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	echo "net.core.wmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	sudo sysctl -p
+	
+	mkdir -p $HOME/backup/ $HOME/scripts/ $HOME/scripts/log/
+	
+	sudo wget -O $HOME/scripts/qnode_restart.sh -N https://raw.githubusercontent.com/lamat1111/quilibrium-node-auto-installer/master/qnode_restart && sudo chmod +x $HOME/scripts/qnode_restart.sh
+	
 	# 安装GVM
 	bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
 	source $HOME/.gvm/scripts/gvm
@@ -61,18 +66,19 @@ function install_node() {
 	
 	# 克隆仓库
 	git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
-	cd ceremonyclient/node 
-	chmod +x poor_mans_cd.sh
-	
+	cd $HOME/ceremonyclient/
+	git switch release
+	cd $HOME/ceremonyclient/node
+		
 	# 运行
-	screen -dmS quil bash -c './poor_mans_cd.sh'
+	screen -dmS quil bash -c './release_autorun.sh'
 
 	# 设置守护
 	script_path="$HOME/check_and_restart.sh"
 	wget -O $script_path https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/check_and_restart.sh && chmod +x $script_path
 	(crontab -l 2>/dev/null; echo "*/30 * * * * $script_path") | crontab -
 
-	echo "部署完成，然后开始挖矿"
+	echo "部署完成"
 }
 
 # 提取秘钥

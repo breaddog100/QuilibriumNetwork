@@ -26,7 +26,7 @@ if [ -z "$process" ]; then
     cd $HOME/ceremonyclient/node
 
     # 启动程序
-    screen -dmS quil bash -c './poor_mans_cd.sh'
+    screen -dmS quil bash -c './release_autorun.sh'
 
     # 记录重启操作
     if [ $? -eq 0 ]; then
