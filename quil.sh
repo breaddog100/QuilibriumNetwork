@@ -48,7 +48,6 @@ function install_node() {
 	sudo sysctl -p
 	
 	mkdir -p $HOME/backup/ $HOME/scripts/ $HOME/scripts/log/
-	
 	sudo wget -O $HOME/scripts/qnode_restart.sh -N https://raw.githubusercontent.com/lamat1111/quilibrium-node-auto-installer/master/qnode_restart && sudo chmod +x $HOME/scripts/qnode_restart.sh
 	
 	# 安装GVM
@@ -136,21 +135,21 @@ function start_node(){
 
 # 卸载节点
 function uninstall_node(){
-
     #screen -S quil -X quit
     screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
 	rm -rf $HOME/ceremonyclient
 	rm -rf $HOME/check_and_restart.sh
 	echo "卸载完成。"
-
 }
 
-# 查询Peer ID
-function check_peer_id(){
-	source /root/.gvm/scripts/gvm
-	gvm use go1.20.2
-	cd $HOME/ceremonyclient/node/ && GOEXPERIMENT=arenas go run ./... -peer-id
-	echo "浏览器打开：https://quilibrium.com/rewards/ ，在左侧输入Peer ID查询"
+# 查询节点信息
+function check_node_info(){
+	#source $HOME/.gvm/scripts/gvm
+	#gvm use go1.20.2
+	#cd $HOME/ceremonyclient/node/ && GOEXPERIMENT=arenas go run ./... -node-info
+	#echo "该命令目前官方提示在1.4.18无法执行，需要等待"
+	echo "当前版本："
+	cat ~/ceremonyclient/node/config/version.go | grep -A 1 'func GetVersion() \[\]byte {' | grep -Eo '0x[0-9a-fA-F]+' | xargs printf '%d.%d.%d'
 }
 
 # 下载快照
@@ -200,6 +199,34 @@ function update_repair(){
     fi
 }
 
+# 查询余额
+function check_balance(){
+	source $HOME/.gvm/scripts/gvm
+	gvm use go1.20.2
+	cd "$HOME/ceremonyclient/client"
+	
+	# 设置文件路径
+	FILE="$HOME/ceremonyclient/client/qclient"
+	
+	# 检查文件是否存在
+	if [ ! -f "$FILE" ]; then
+	    echo "文件不存在，正在尝试构建..."
+	    # 运行go build命令来构建程序
+	    GOEXPERIMENT=arenas go build -o qclient main.go
+	    # 检查go build命令是否成功执行
+	    if [ $? -eq 0 ]; then
+	        echo "余额："
+	        ./qclient token balance
+	    else
+	        echo "构建失败。"
+	        exit 1
+	    fi
+	else
+		echo "余额："
+	    ./qclient token balance
+	fi
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -214,10 +241,9 @@ function main_menu() {
 	    echo "4. 查看日志 view_logs"
 	    echo "5. 停止节点 stop_node"
 	    echo "6. 启动节点 start_node"
-	    echo "7. 查询PeerID check_peer_id"
+	    echo "7. 节点信息 check_node_info"
 	    echo "8. 卸载节点 uninstall_node"
-	    echo "9. 下载快照 download_snap"
-	    echo "10. 更新REPAIR update_repair"
+	    echo "9. 查询余额 check_balance"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -228,10 +254,9 @@ function main_menu() {
 	    4) view_logs ;;
 	    5) stop_node ;;
 	    6) start_node ;;
-	    7) check_peer_id ;;
+	    7) check_node_info ;;
 	    8) uninstall_node ;;
-	    9) download_snap ;;
-	    10) update_repair ;;
+	    9) check_balance ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
