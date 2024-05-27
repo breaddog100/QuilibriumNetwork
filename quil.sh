@@ -180,7 +180,7 @@ function download_snap(){
         stop_node
         unzip store.zip -d $HOME/ceremonyclient/node/.config/
     	start_node
-    	echo "快照已更新，超过30分钟高度没有增加请运行【10.更新REPAIR】文件"
+    	#echo "快照已更新，超过30分钟高度没有增加请运行【10.更新REPAIR】文件"
     else
         echo "下载失败。"
         exit 1
