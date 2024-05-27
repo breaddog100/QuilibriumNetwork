@@ -238,8 +238,8 @@ function install_grpc(){
 
 # 健康状态
 function check_heal(){
-	echo "提取了当天的日志，如果current_frame一直在增加，说明程序运行正常"
 	sudo journalctl -u ceremonyclient.service --no-hostname --since "today" | awk '/"current_frame"/ {print $1, $2, $3, $7}'
+	echo "提取了当天的日志，如果current_frame一直在增加，说明程序运行正常"
 }
 
 # 主菜单
