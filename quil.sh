@@ -9,33 +9,37 @@ function install_node() {
 	# 获取当前swap大小（单位：GB）
 	swap_size=$(free -g | grep "Swap:" | awk '{print $2}')
 	
-	# 计算期望的swap大小（内存的两倍）
+	# 计算期望的swap大小（内存的两倍或者24GB中的较小者）
 	desired_swap_size=$((mem_size * 2))
+	if ((desired_swap_size >= 24)); then
+	    desired_swap_size=24
+	fi
 	
-	# 检查当前swap大小是否为内存的两倍
-	if [[ $swap_size -ne $desired_swap_size ]]; then
-	    echo "当前swap小。正在将swap大小设置为 $desired_swap_size GB..."
+	# 检查当前swap大小是否满足要求
+	if ((swap_size < desired_swap_size)) && ((swap_size < 24)); then
+	    echo "当前swap大小不足。正在将swap大小设置为 $desired_swap_size GB..."
 	
-	    # 如果当前没有swap，创建一个新的swap文件
-	    if [[ $swap_size -eq 0 ]]; then
-	        sudo fallocate -l ${desired_swap_size}G /swapfile
-	        sudo chmod 600 /swapfile
-	        sudo mkswap /swapfile
-	        sudo swapon /swapfile
-	        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-	    else
-	        # 如果swap已存在，先关闭再重新设置大小
-	        sudo swapoff -a
-	        sudo fallocate -l ${desired_swap_size}G /swapfile
-	        sudo chmod 600 /swapfile
-	        sudo mkswap /swapfile
-	        sudo swapon -a
-	        echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
-	    fi
+	    # 关闭所有swap分区
+	    sudo swapoff -a
+	
+	    # 分配新的swap文件
+	    sudo fallocate -l ${desired_swap_size}G /swapfile
+	
+	    # 设置正确的文件权限
+	    sudo chmod 600 /swapfile
+	
+	    # 设置swap分区
+	    sudo mkswap /swapfile
+	
+	    # 启用swap分区
+	    sudo swapon /swapfile
+	
+	    # 添加swap分区至fstab，确保开机时自动挂载
+	    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 	
 	    echo "Swap大小已设置为 $desired_swap_size GB。"
 	else
-	    echo "Swap已经设置为内存的两倍。"
+	    echo "当前swap大小已经满足要求或大于等于24GB，无需改动。"
 	fi
 	
     sudo apt update
@@ -46,10 +50,7 @@ function install_node() {
 	echo "net.core.rmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	echo "net.core.wmem_max=600000000" | sudo tee -a /etc/sysctl.conf
 	sudo sysctl -p
-	
-	mkdir -p $HOME/backup/ $HOME/scripts/ $HOME/scripts/log/
-	sudo wget -O $HOME/scripts/qnode_restart.sh -N https://raw.githubusercontent.com/lamat1111/quilibrium-node-auto-installer/master/qnode_restart && sudo chmod +x $HOME/scripts/qnode_restart.sh
-	
+
 	# 安装GVM
 	bash < <(curl -s -S -L https://raw.githubusercontent.com/moovweb/gvm/master/binscripts/gvm-installer)
 	source $HOME/.gvm/scripts/gvm
@@ -67,22 +68,34 @@ function install_node() {
 	git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 	cd $HOME/ceremonyclient/
 	git switch release
-	cd $HOME/ceremonyclient/node
-		
-	# 运行
-	screen -dmS quil bash -c './release_autorun.sh'
 
-	# 设置守护
-	script_path="$HOME/check_and_restart.sh"
-	wget -O $script_path https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/check_and_restart.sh && chmod +x $script_path
-	(crontab -l 2>/dev/null; echo "*/30 * * * * $script_path") | crontab -
+    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
+[Unit]
+Description=Ceremony Client Go App Service
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=$HOME/ceremonyclient/node
+Environment=GOEXPERIMENT=arenas
+ExecStart=$HOME/ceremonyclient/node/node-1.4.18-linux-amd64
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable ceremonyclient
+    sudo systemctl start ceremonyclient
+
+	rm $HOME/go/bin/qclient
+	cd $HOME/ceremonyclient/client
+	GOEXPERIMENT=arenas go build -o $HOME/go/bin/qclient main.go
 
 	echo "部署完成"
 }
 
 # 提取秘钥
 function backup_key(){
-
     # 文件路径
 	file_path_keys="$HOME/ceremonyclient/node/.config/keys.yml"
 	file_path_config="$HOME/ceremonyclient/node/.config/config.yml"
@@ -104,38 +117,30 @@ function backup_key(){
 
 # 查看日志
 function view_logs(){
-	clear
-	echo "3秒后进入screen，查看完请ctrl + a + d 退出"
-	sleep 3
-	screen -r quil
+	sudo journalctl -u ceremonyclient.service -f --no-hostname -o cat
 }
 
 # 查看节点状态
 function view_status(){
-	
-	quil_log="/var/log/my_program.log"
-	if [ -f "$quil_log" ]; then
-	tail -96 $quil_log
-	else
-		echo "日志文件需要30分钟后生成请等待..."
-	fi
+	sudo systemctl status ceremonyclient
 }
 
 # 停止节点
 function stop_node(){
-	screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
+	sudo systemctl stop ceremonyclient
 	echo "quil 节点已停止"
 }
 
 # 启动节点
 function start_node(){
-	$HOME/check_and_restart.sh
+	sudo systemctl start ceremonyclient
 	echo "quil 节点已启动"
 }
 
 # 卸载节点
 function uninstall_node(){
     #screen -S quil -X quit
+    sudo systemctl stop ceremonyclient
     screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
 	rm -rf $HOME/ceremonyclient
 	rm -rf $HOME/check_and_restart.sh
@@ -204,7 +209,6 @@ function check_balance(){
 	source $HOME/.gvm/scripts/gvm
 	gvm use go1.20.2
 	cd "$HOME/ceremonyclient/client"
-	
 	# 设置文件路径
 	FILE="$HOME/ceremonyclient/client/qclient"
 	
@@ -227,6 +231,11 @@ function check_balance(){
 	fi
 }
 
+function install_grpc(){
+	# grpc
+	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -234,6 +243,7 @@ function main_menu() {
 	    echo "===================Quilibrium Network一键部署脚本==================="
 		echo "沟通电报群：https://t.me/lumaogogogo"
 		echo "推荐配置：12C16G250G"
+		echo "如果是老节点升级，请依次运行2备份秘钥，8卸载节点，1部署节点，然后再恢复秘钥"
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
 	    echo "2. 提取秘钥 backup_key"
