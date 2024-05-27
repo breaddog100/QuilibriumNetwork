@@ -236,6 +236,12 @@ function install_grpc(){
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 }
 
+# 健康状态
+function check_heal(){
+	echo "提取了最近2天的日志，如果current_frame一直在增加，说明程序运行正常"
+	sudo journalctl -u ceremonyclient.service --no-hostname --since "2 days ago" | awk '/"current_frame"/ {print $1, $2, $3, $7}'
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -255,6 +261,7 @@ function main_menu() {
 	    echo "8. 卸载节点 uninstall_node"
 	    echo "9. 查询余额 check_balance"
 	    echo "10. 下载快照 download_snap"
+	    echo "11. 运行状态 check_heal"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -269,6 +276,7 @@ function main_menu() {
 	    8) uninstall_node ;;
 	    9) check_balance ;;
 	    10) download_snap ;;
+	    11) check_heal ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
