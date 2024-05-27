@@ -254,6 +254,7 @@ function main_menu() {
 	    echo "7. 节点信息 check_node_info"
 	    echo "8. 卸载节点 uninstall_node"
 	    echo "9. 查询余额 check_balance"
+	    echo "10. 下载快照 download_snap"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -267,6 +268,7 @@ function main_menu() {
 	    7) check_node_info ;;
 	    8) uninstall_node ;;
 	    9) check_balance ;;
+	    10) download_snap ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
