@@ -65,7 +65,7 @@ function install_node() {
 	gvm use go1.20.2
 	
 	# 克隆仓库
-	git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
+	git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
 	cd $HOME/ceremonyclient/
 	git switch release
 
@@ -261,7 +261,7 @@ function main_menu() {
 		echo "推荐配置：12C16G250G"
 		echo "如果是老节点升级，请依次运行2备份秘钥，8卸载节点，1部署节点，然后再恢复秘钥"
 		echo "感谢以下无私的分享者："
-    	echo "yann 协助大家升级1.4.18-p2"
+    	echo "yann 协助社区升级1.4.18-p2"
     	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
