@@ -244,13 +244,12 @@ function check_heal(){
 
 # 升级程序
 function update_quil(){
-	stop_node
 	cd ceremonyclient
 	git remote remove origin
 	git remote add origin https://source.quilibrium.com/quilibrium/ceremonyclient.git
-	git pull origin main 
-	#git reset --hard v1.4.18-p2
-	start_node
+	git pull
+	git reset --hard v1.4.18-p2
+	sudo systemctl restart ceremonyclient
 }
 
 # 主菜单
