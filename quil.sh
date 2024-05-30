@@ -178,7 +178,7 @@ function download_snap(){
 		    echo "unzip is already installed."
 		fi
         stop_node
-        unzip store.zip -d $HOME/ceremonyclient/node/.config/
+        sudo unzip store.zip -d $HOME/ceremonyclient/node/.config/
     	start_node
     	#echo "快照已更新，超过30分钟高度没有增加请运行【10.更新REPAIR】文件"
     else
@@ -242,6 +242,17 @@ function check_heal(){
 	echo "提取了当天的日志，如果current_frame一直在增加，说明程序运行正常"
 }
 
+# 升级程序
+function update_quil(){
+	stop_node
+	cd ceremonyclient
+	git remote remove origin
+	git remote add origin https://source.quilibrium.com/quilibrium/ceremonyclient.git
+	git pull origin main 
+	#git reset --hard v1.4.18-p2
+	start_node
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -262,6 +273,7 @@ function main_menu() {
 	    echo "9. 查询余额 check_balance"
 	    echo "10. 下载快照 download_snap"
 	    echo "11. 运行状态 check_heal"
+	    echo "12. 升级程序 update_quil"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -277,6 +289,7 @@ function main_menu() {
 	    9) check_balance ;;
 	    10) download_snap ;;
 	    11) check_heal ;;
+	    12) update_quil ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
