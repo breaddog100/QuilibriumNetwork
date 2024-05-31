@@ -42,6 +42,8 @@ function install_node() {
 	    echo "当前swap大小已经满足要求或大于等于32GB，无需改动。"
 	fi
 	
+	echo "DNS=8.8.8.8 8.8.4.4" | sudo tee -a /etc/systemd/resolved.conf > /dev/null
+	sudo systemctl restart systemd-resolved
     sudo apt update
     sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils jq coreutils
 
@@ -129,8 +131,7 @@ function view_status(){
 
 # 停止节点
 function stop_node(){
-	timeout 30s sudo systemctl stop ceremonyclient
-	ps aux | grep 'node-' | grep -v grep | awk '{print $2}' | sudo xargs kill
+	sudo systemctl stop ceremonyclient
 	echo "quil 节点已停止"
 }
 
