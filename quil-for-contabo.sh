@@ -85,8 +85,6 @@ ExecStart=$HOME/ceremonyclient/node/node-1.4.18-linux-amd64
 WantedBy=multi-user.target
 EOF
 
-	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-
     sudo systemctl daemon-reload
     sudo systemctl enable ceremonyclient
     sudo systemctl start ceremonyclient
@@ -101,6 +99,7 @@ EOF
 # 提取秘钥
 function backup_key(){
     # 文件路径
+    sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	file_path_keys="$HOME/ceremonyclient/node/.config/keys.yml"
 	file_path_config="$HOME/ceremonyclient/node/.config/config.yml"
 	
@@ -258,13 +257,14 @@ function update_quil(){
 
 function cpu_limited_rate(){
 	read -p "输入每个CPU允许quil使用占比(如60%输入0.6，最大1):" cpu_rate
+	comparison=$(echo "$cpu_rate >= 1" | bc)
+	if [ "$comparison" -eq 1 ]; then
+	    cpu_rate=1
+	fi
+	limit_rate=$(echo "$cpu_core * 100" | bc)
+	echo "最终限制的CPU使用率为：$limit_rate%"
 	cpu_core=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
 	limit_rate=$(echo "$cpu_rate * $cpu_core * 100" | bc)
-	comparison=$(echo "$limit_rate >= 100" | bc)
-	if [ "$comparison" -eq 1 ]; then
-	    limit_rate=100
-	fi
-	echo "最终限制的CPU使用率为：$limit_rate%"
 	
 	stop_node
 	sudo rm -f /lib/systemd/system/ceremonyclient.service
