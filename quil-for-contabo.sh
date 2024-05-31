@@ -256,19 +256,19 @@ function update_quil(){
 }
 
 function cpu_limited_rate(){
-	read -p "输入每个CPU允许quil使用占比(如60%输入0.6，最大1):" cpu_rate
-	comparison=$(echo "$cpu_rate >= 1" | bc)
-	if [ "$comparison" -eq 1 ]; then
-	    cpu_rate=1
-	fi
-	limit_rate=$(echo "$cpu_core * 100" | bc)
-	echo "最终限制的CPU使用率为：$limit_rate%"
-	cpu_core=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
-	limit_rate=$(echo "$cpu_rate * $cpu_core * 100" | bc)
-	
-	stop_node
-	sudo rm -f /lib/systemd/system/ceremonyclient.service
-	sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
+    read -p "输入每个CPU允许quil使用占比(如60%输入0.6，最大1):" cpu_rate
+    comparison=$(echo "$cpu_rate >= 1" | bc)
+    if [ "$comparison" -eq 1 ]; then
+        cpu_rate=1
+    fi
+    
+    cpu_core=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
+    limit_rate=$(echo "scale=2; $cpu_rate * $cpu_core * 100" | bc)
+    echo "最终限制的CPU使用率为：$limit_rate%"
+    
+    stop_node
+    sudo rm -f /lib/systemd/system/ceremonyclient.service
+    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
 Description=Ceremony Client Go App Service
 [Service]
