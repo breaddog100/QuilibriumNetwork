@@ -264,6 +264,7 @@ function cpu_limited_rate(){
     cpu_core=$(lscpu | grep '^CPU(s):' | awk '{print $2}')
     limit_rate=$(echo "scale=2; $cpu_rate * $cpu_core * 100" | bc)
     echo "最终限制的CPU使用率为：$limit_rate%"
+    echo "正在重启，请稍等..."
     
     stop_node
     sudo rm -f /lib/systemd/system/ceremonyclient.service
@@ -282,10 +283,10 @@ CPUQuota=$limit_rate%
 WantedBy=multi-user.target
 EOF
 
-    echo "正在重启，请稍等..."
     sudo systemctl daemon-reload
     sudo systemctl enable ceremonyclient
     sudo systemctl start ceremonyclient
+    echo "quil 节点已启动"
 }
 
 # 主菜单
