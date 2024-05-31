@@ -128,8 +128,7 @@ function view_status(){
 
 # 停止节点
 function stop_node(){
-	timeout 30s sudo systemctl stop ceremonyclient
-	ps aux | grep 'node-' | grep -v grep | awk '{print $2}' | sudo xargs kill
+	sudo systemctl stop ceremonyclient
 	echo "quil 节点已停止"
 }
 
@@ -254,6 +253,7 @@ function update_quil(){
 	sudo systemctl restart ceremonyclient
 }
 
+# 限制CPU使用率
 function cpu_limited_rate(){
     read -p "输入每个CPU允许quil使用占比(如60%输入0.6，最大1):" cpu_rate
     comparison=$(echo "$cpu_rate >= 1" | bc)
@@ -282,6 +282,7 @@ CPUQuota=$limit_rate%
 WantedBy=multi-user.target
 EOF
 
+    echo "正在重启，请稍等..."
     sudo systemctl daemon-reload
     sudo systemctl enable ceremonyclient
     sudo systemctl start ceremonyclient
