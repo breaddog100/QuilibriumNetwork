@@ -111,7 +111,7 @@ function backup_key(){
 	
 	# 将压缩文件移动到$HOME目录
 	mv ~/quil_bak_$(date +%Y%m%d).zip $HOME
-
+	echo "已将config.yml、keys.yml和目录store压缩并保存到$HOME下"
 
 }
 
@@ -150,9 +150,7 @@ function uninstall_node(){
 
 # 查询节点信息
 function check_node_info(){
-	#source $HOME/.gvm/scripts/gvm
-	#gvm use go1.20.2
-	#cd $HOME/ceremonyclient/node/ && GOEXPERIMENT=arenas go run ./... -node-info
+	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
 	#echo "该命令目前官方提示在1.4.18无法执行，需要等待"
 	echo "当前版本："
 	cat ~/ceremonyclient/node/config/version.go | grep -A 1 'func GetVersion() \[\]byte {' | grep -Eo '0x[0-9a-fA-F]+' | xargs printf '%d.%d.%d'
@@ -207,34 +205,19 @@ function update_repair(){
 
 # 查询余额
 function check_balance(){
-	source $HOME/.gvm/scripts/gvm
-	gvm use go1.20.2
-	cd "$HOME/ceremonyclient/client"
-	# 设置文件路径
-	FILE="$HOME/ceremonyclient/client/qclient"
+	echo "查询余额请先运行【14.安装gRPC】，安装后等待30分钟再查询"
+	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
 	
-	# 检查文件是否存在
-	if [ ! -f "$FILE" ]; then
-	    echo "文件不存在，正在尝试构建..."
-	    # 运行go build命令来构建程序
-	    GOEXPERIMENT=arenas go build -o qclient main.go
-	    # 检查go build命令是否成功执行
-	    if [ $? -eq 0 ]; then
-	        echo "余额："
-	        ./qclient token balance
-	    else
-	        echo "构建失败。"
-	        exit 1
-	    fi
-	else
-		echo "余额："
-	    ./qclient token balance
-	fi
 }
 
+# 安装gRPC
 function install_grpc(){
-	# grpc
+	source $HOME/.gvm/scripts/gvm
+	gvm use go1.20.2
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+	wget --no-cache -O - https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
+	stop_node
+	start_node
 }
 
 # 健康状态
@@ -324,7 +307,7 @@ function main_menu() {
     	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
-	    echo "2. 提取秘钥 backup_key"
+	    echo "2. 备份秘钥 backup_key"
 	    echo "3. 查看状态 view_status"
 	    echo "4. 查看日志 view_logs"
 	    echo "5. 停止节点 stop_node"
@@ -336,6 +319,7 @@ function main_menu() {
 	    echo "11. 运行状态 check_heal"
 	    echo "12. 升级程序 update_quil"
 	    echo "13. 限制CPU cpu_limited_rate"
+	    echo "14. 安装gRPC install_grpc"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -353,6 +337,7 @@ function main_menu() {
 	    11) check_heal ;;
 	    12) update_quil ;;
 	    13) cpu_limited_rate ;;
+	    14) install_grpc ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
