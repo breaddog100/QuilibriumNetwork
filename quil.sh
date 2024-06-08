@@ -98,21 +98,20 @@ EOF
 function backup_key(){
     # 文件路径
     sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	file_path_keys="$HOME/ceremonyclient/node/.config/keys.yml"
-	file_path_config="$HOME/ceremonyclient/node/.config/config.yml"
+    cd $HOME/ceremonyclient/node/.config/
+    # 检查是否安装了zip
+	if ! command -v zip &> /dev/null; then
+	    echo "zip is not installed. Installing now..."
+	    sudo apt-get update
+	    sudo apt-get install zip -y
+	fi
 	
-	# 检查文件是否存在
-	if [ -f "$file_path_keys" ]; then
-	    echo "keys文件已生成，路径为: $file_path_keys，请尽快备份"
-	else
-	    echo "keys文件未生成，请等待..."
-	fi
-	# 检查文件是否存在
-	if [ -f "$file_path_config" ]; then
-	    echo "config文件已生成，路径为: $file_path_config，请尽快备份"
-	else
-	    echo "config文件未生成，请等待..."
-	fi
+	# 创建压缩文件
+	zip -r ~/quil_bak_$(date +%Y%m%d).zip config.yml keys.yml store
+	
+	# 将压缩文件移动到$HOME目录
+	mv ~/quil_bak_$(date +%Y%m%d).zip $HOME
+
 
 }
 
@@ -129,6 +128,7 @@ function view_status(){
 # 停止节点
 function stop_node(){
 	sudo systemctl stop ceremonyclient
+	ps aux | grep 'node-' | grep -v grep | awk '{print $2}' | sudo xargs kill -9
 	echo "quil 节点已停止"
 }
 
@@ -245,12 +245,34 @@ function check_heal(){
 
 # 升级程序
 function update_quil(){
-	cd ceremonyclient
-	git remote remove origin
-	git remote add origin https://source.quilibrium.com/quilibrium/ceremonyclient.git
+	stop_node
+	# switch to Gitlab repo of Cassie
+	cd ~/ceremonyclient
+	git remote set-url origin https://source.quilibrium.com/quilibrium/ceremonyclient.git
 	git pull
-	git reset --hard v1.4.18-p2
-	sudo systemctl restart ceremonyclient
+	# end of switch code block
+	cd ~/ceremonyclient 
+	git reset --hard origin/release-cdn
+	git fetch --all
+	git clean -df
+	git merge origin/release-cdn
+	cd ~/ceremonyclient/node
+	sudo rm -f /lib/systemd/system/ceremonyclient.service
+    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
+[Unit]
+Description=Ceremony Client Go App Service
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=$HOME/ceremonyclient/node
+Environment=GOEXPERIMENT=arenas
+ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
+[Install]
+WantedBy=multi-user.target
+EOF
+	systemctl daemon-reload
+	start_node
 }
 
 # 限制CPU使用率
