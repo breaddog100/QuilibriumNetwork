@@ -205,7 +205,6 @@ function update_repair(){
 
 # 查询余额
 function check_balance(){
-	echo "查询余额请先运行【14.安装gRPC】，安装后等待30分钟再查询"
 	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
 	
 }
@@ -300,7 +299,8 @@ function main_menu() {
 	    clear
 	    echo "===================Quilibrium Network一键部署脚本==================="
 		echo "沟通电报群：https://t.me/lumaogogogo"
-		echo "推荐配置：12C16G250G"
+		echo "推荐配置：12C24G300G"
+		echo "查询余额请先运行【14.安装gRPC】只需运行一次，安装后等待30分钟再查询"
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
     	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
