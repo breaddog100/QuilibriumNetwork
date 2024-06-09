@@ -63,6 +63,9 @@ function install_node() {
 	export GOROOT_BOOTSTRAP=$GOROOT
 	gvm install go1.20.2
 	gvm use go1.20.2
+	export GOROOT_BOOTSTRAP=$GOROOT
+	gvm install go1.22.4
+	gvm use go1.22.4
 	
 	# 克隆仓库
 	git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
@@ -78,7 +81,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/node-1.4.18-linux-amd64
+ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -90,6 +93,9 @@ EOF
 	rm $HOME/go/bin/qclient
 	cd $HOME/ceremonyclient/client
 	GOEXPERIMENT=arenas go build -o $HOME/go/bin/qclient main.go
+	# building grpcurl
+	cd ~
+	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 
 	echo "部署完成"
 }
@@ -211,8 +217,20 @@ function check_balance(){
 
 # 安装gRPC
 function install_grpc(){
-	source $HOME/.gvm/scripts/gvm
-	gvm use go1.20.2
+	# 检查当前 Go 版本
+	current_go_version=$(go version | awk '{print $3}')
+	
+	# 解析版本号并比较
+	if [[ "$current_go_version" < "go1.22.4" ]]; then
+	  # 如果当前版本低于1.22.4，则使用 GVM 安装1.22.4
+	  echo "当前 Go 版本为 $current_go_version，低于1.22.4，开始安装1.22.4版本..."
+	  source $HOME/.gvm/scripts/gvm
+	  gvm install go1.22.4
+	  gvm use go1.22.4 --default
+	else
+	  echo "当前 Go 版本为 $current_go_version，不需要更新。"
+	fi
+
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 	wget --no-cache -O - https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
 	stop_node
@@ -253,7 +271,7 @@ ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
 [Install]
 WantedBy=multi-user.target
 EOF
-	systemctl daemon-reload
+	sudo systemctl daemon-reload
 	start_node
 }
 
@@ -281,7 +299,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/node-1.4.18-linux-amd64
+ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
 CPUQuota=$limit_rate%
 [Install]
 WantedBy=multi-user.target
