@@ -114,9 +114,6 @@ function backup_key(){
 	
 	# 创建压缩文件
 	zip -r ~/quil_bak_$(date +%Y%m%d).zip config.yml keys.yml store
-	
-	# 将压缩文件移动到$HOME目录
-	mv ~/quil_bak_$(date +%Y%m%d).zip $HOME
 	echo "已将config.yml、keys.yml和目录store压缩并保存到$HOME下"
 
 }
