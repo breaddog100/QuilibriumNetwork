@@ -70,7 +70,10 @@ function install_node() {
 	# 克隆仓库
 	git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
 	cd $HOME/ceremonyclient/
-	git switch release
+	git reset --hard origin/release-cdn
+	git fetch --all
+	git clean -df
+	git merge origin/release-cdn
 
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
