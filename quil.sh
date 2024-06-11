@@ -308,6 +308,13 @@ EOF
     echo "quil 节点已启动"
 }
 
+# contabo
+function contabo(){
+	echo "DNS=8.8.8.8 8.8.4.4" | sudo tee -a /etc/systemd/resolved.conf > /dev/null
+	sudo systemctl restart systemd-resolved
+	echo "已修复contabo网络"
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -316,6 +323,7 @@ function main_menu() {
 		echo "沟通电报群：https://t.me/lumaogogogo"
 		echo "推荐配置：12C24G300G"
 		echo "查询余额请先运行【14.安装gRPC】只需运行一次，安装后等待30分钟再查询"
+		echo "Contabo机器如果无法安装请先运行【15.修复contabo】"
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
     	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
@@ -334,6 +342,7 @@ function main_menu() {
 	    echo "12. 升级程序 update_quil"
 	    echo "13. 限制CPU cpu_limited_rate"
 	    echo "14. 安装gRPC install_grpc"
+	    echo "15. 修复contabo contabo"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -352,6 +361,7 @@ function main_menu() {
 	    12) update_quil ;;
 	    13) cpu_limited_rate ;;
 	    14) install_grpc ;;
+	    15) contabo ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
