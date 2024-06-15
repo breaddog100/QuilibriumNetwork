@@ -99,7 +99,7 @@ EOF
 	# building grpcurl
 	cd ~
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-
+	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	echo "部署完成"
 }
 
@@ -156,8 +156,8 @@ function uninstall_node(){
 
 # 查询节点信息
 function check_node_info(){
+	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
-	#echo "该命令目前官方提示在1.4.18无法执行，需要等待"
 	echo "当前版本："
 	cat ~/ceremonyclient/node/config/version.go | grep -A 1 'func GetVersion() \[\]byte {' | grep -Eo '0x[0-9a-fA-F]+' | xargs printf '%d.%d.%d'
 }
@@ -211,12 +211,13 @@ function update_repair(){
 
 # 查询余额
 function check_balance(){
+	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
-	
 }
 
 # 安装gRPC
 function install_grpc(){
+	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	# 检查当前 Go 版本
 	current_go_version=$(go version | awk '{print $3}')
 	
@@ -308,6 +309,7 @@ EOF
     sudo systemctl daemon-reload
     sudo systemctl enable ceremonyclient
     sudo systemctl start ceremonyclient
+    sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
     echo "quil 节点已启动"
 }
 
