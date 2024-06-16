@@ -68,13 +68,11 @@ function install_node() {
 	gvm use go1.22.4
 	
 	# 克隆仓库
-	git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
+	git clone https://github.com/quilibriumnetwork/ceremonyclient.git
 	cd $HOME/ceremonyclient/
-	git reset --hard origin/release-cdn
-	git fetch --all
-	git clean -df
-	git merge origin/release-cdn
-
+	git pull
+	git checkout release
+	
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
 Description=Ceremony Client Go App Service
@@ -84,7 +82,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
+ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -157,7 +155,7 @@ function uninstall_node(){
 # 查询节点信息
 function check_node_info(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
+	cd ~/ceremonyclient/node && ./node-1.4.19.1-linux-amd64 -node-info
 	echo "当前版本："
 	cat ~/ceremonyclient/node/config/version.go | grep -A 1 'func GetVersion() \[\]byte {' | grep -Eo '0x[0-9a-fA-F]+' | xargs printf '%d.%d.%d'
 }
@@ -212,7 +210,7 @@ function update_repair(){
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.19-linux-amd64 -node-info
+	cd ~/ceremonyclient/node && ./node-1.4.19.1-linux-amd64 -node-info
 }
 
 # 安装gRPC
@@ -249,6 +247,15 @@ function update_quil(){
 	stop_node
 	# switch to Gitlab repo of Cassie
 	cd ~/ceremonyclient
+	git checkout main
+	git branch -D release
+	git remote set-url origin https://github.com/quilibriumnetwork/ceremonyclient.git
+	git pull
+	git checkout release
+
+	stop_node
+	# switch to Gitlab repo of Cassie
+	cd ~/ceremonyclient
 	git remote set-url origin https://source.quilibrium.com/quilibrium/ceremonyclient.git
 	git pull
 	# end of switch code block
@@ -258,6 +265,7 @@ function update_quil(){
 	git clean -df
 	git merge origin/release-cdn
 	cd ~/ceremonyclient/node
+	
 	sudo rm -f /lib/systemd/system/ceremonyclient.service
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
@@ -268,7 +276,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
+ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
 [Install]
 WantedBy=multi-user.target
 EOF
@@ -300,7 +308,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/node-1.4.19-linux-amd64
+ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
 CPUQuota=$limit_rate%
 [Install]
 WantedBy=multi-user.target
@@ -327,6 +335,7 @@ function main_menu() {
 	    echo "===================Quilibrium Network一键部署脚本==================="
 		echo "沟通电报群：https://t.me/lumaogogogo"
 		echo "推荐配置：12C24G300G"
+		echo "已升级到1.4.19-p1版本，老版本运行【12.升级程序】，新装直接运行1即可"
 		echo "查询余额请先运行【14.安装gRPC】只需运行一次，安装后等待30分钟再查询"
 		echo "Contabo机器如果无法安装请先运行【15.修复contabo】"
 		echo "感谢以下无私的分享者："
