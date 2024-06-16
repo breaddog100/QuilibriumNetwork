@@ -252,19 +252,6 @@ function update_quil(){
 	git remote set-url origin https://github.com/quilibriumnetwork/ceremonyclient.git
 	git pull
 	git checkout release
-
-	stop_node
-	# switch to Gitlab repo of Cassie
-	cd ~/ceremonyclient
-	git remote set-url origin https://source.quilibrium.com/quilibrium/ceremonyclient.git
-	git pull
-	# end of switch code block
-	cd ~/ceremonyclient 
-	git reset --hard origin/release-cdn
-	git fetch --all
-	git clean -df
-	git merge origin/release-cdn
-	cd ~/ceremonyclient/node
 	
 	sudo rm -f /lib/systemd/system/ceremonyclient.service
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
