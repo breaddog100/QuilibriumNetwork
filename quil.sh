@@ -208,7 +208,7 @@ function update_repair(){
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.19.1-linux-amd64 -node-info
+	cd ~/ceremonyclient/node && ./node-1.4.21-linux-amd64 -node-info
 }
 
 # 安装gRPC
