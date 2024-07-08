@@ -156,8 +156,6 @@ function uninstall_node(){
 function check_node_info(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node && ./node-1.4.19.1-linux-amd64 -node-info
-	echo "当前版本："
-	cat ~/ceremonyclient/node/config/version.go | grep -A 1 'func GetVersion() \[\]byte {' | grep -Eo '0x[0-9a-fA-F]+' | xargs printf '%d.%d.%d'
 }
 
 # 下载快照
