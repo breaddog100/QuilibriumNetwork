@@ -155,7 +155,7 @@ function uninstall_node(){
 # 查询节点信息
 function check_node_info(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.19.1-linux-amd64 -node-info
+	cd ~/ceremonyclient/node && ./node-1.4.21-linux-amd64 -node-info
 }
 
 # 下载快照
