@@ -319,8 +319,7 @@ function main_menu() {
 	    clear
 	    echo "===================Quilibrium Network一键部署脚本==================="
 		echo "沟通电报群：https://t.me/lumaogogogo"
-		echo "推荐配置：12C24G300G"
-		echo "已升级到1.4.19-p1版本，老版本运行【12.升级程序】，新装直接运行1即可"
+		echo "推荐配置：12C24G300G;CPU核心越多越好"
 		echo "查询余额请先运行【14.安装gRPC】只需运行一次，安装后等待30分钟再查询"
 		echo "Contabo机器如果无法安装请先运行【15.修复contabo】"
 		echo "感谢以下无私的分享者："
@@ -328,20 +327,17 @@ function main_menu() {
     	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
-	    echo "2. 备份秘钥 backup_key"
+	    echo "2. 备份节点 backup_key"
 	    echo "3. 查看状态 view_status"
 	    echo "4. 查看日志 view_logs"
 	    echo "5. 停止节点 stop_node"
 	    echo "6. 启动节点 start_node"
-	    echo "7. 节点信息 check_node_info"
-	    echo "8. 卸载节点 uninstall_node"
-	    echo "9. 查询余额 check_balance"
-	    echo "10. 下载快照 download_snap"
-	    echo "11. 运行状态 check_heal"
-	    echo "12. 升级程序 update_quil"
-	    echo "13. 限制CPU cpu_limited_rate"
-	    echo "14. 安装gRPC install_grpc"
-	    echo "15. 修复contabo contabo"
+	    echo "7. 查询余额 check_balance"
+	    echo "8. 升级程序 update_quil"
+	    echo "9. 限制CPU cpu_limited_rate"
+	    echo "10. 安装gRPC install_grpc"
+	    echo "11. 修复contabo contabo"
+	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
 	
@@ -352,15 +348,12 @@ function main_menu() {
 	    4) view_logs ;;
 	    5) stop_node ;;
 	    6) start_node ;;
-	    7) check_node_info ;;
-	    8) uninstall_node ;;
-	    9) check_balance ;;
-	    10) download_snap ;;
-	    11) check_heal ;;
-	    12) update_quil ;;
-	    13) cpu_limited_rate ;;
-	    14) install_grpc ;;
-	    15) contabo ;;
+	    7) check_balance ;;
+	    8) update_quil ;;
+	    9) cpu_limited_rate ;;
+	    10) install_grpc ;;
+	    11) contabo ;;
+	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
 	    esac
