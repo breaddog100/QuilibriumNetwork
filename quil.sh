@@ -97,15 +97,14 @@ EOF
 	# building grpcurl
 	cd ~
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	echo "部署完成"
 }
 
-# 提取秘钥
+# 备份节点
 function backup_key(){
     # 文件路径
     sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-    cd $HOME/ceremonyclient/node/.config/
+    cd $HOME/ceremonyclient/node/
     # 检查是否安装了zip
 	if ! command -v zip &> /dev/null; then
 	    echo "zip is not installed. Installing now..."
@@ -114,8 +113,8 @@ function backup_key(){
 	fi
 	
 	# 创建压缩文件
-	zip -r ~/quil_bak_$(date +%Y%m%d).zip config.yml keys.yml store
-	echo "已将config.yml、keys.yml和目录store压缩并保存到$HOME下"
+	zip -r ~/quil_bak_$(date +%Y%m%d).zip .config
+	echo "已将 .config目录压缩并保存到$HOME下"
 
 }
 
@@ -320,8 +319,8 @@ function main_menu() {
 	    echo "===================Quilibrium Network一键部署脚本==================="
 		echo "沟通电报群：https://t.me/lumaogogogo"
 		echo "推荐配置：12C24G300G;CPU核心越多越好"
-		echo "查询余额请先运行【14.安装gRPC】只需运行一次，安装后等待30分钟再查询"
-		echo "Contabo机器如果无法安装请先运行【15.修复contabo】"
+		echo "查询余额请先运行【安装gRPC】只需运行一次，安装后等待30分钟再查询"
+		echo "Contabo机器如果无法安装请先运行【修复contabo】"
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
     	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
