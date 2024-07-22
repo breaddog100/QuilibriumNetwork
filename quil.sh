@@ -68,10 +68,12 @@ function install_node() {
 	gvm use go1.22.4
 	
 	# 克隆仓库
-	git clone https://github.com/quilibriumnetwork/ceremonyclient.git
-	cd $HOME/ceremonyclient/
-	git pull
-	git checkout release
+	#git clone https://github.com/quilibriumnetwork/ceremonyclient.git
+	git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
+	cd $HOME/ceremonyclient/node
+	git switch release-cdn
+	#git pull
+	#git checkout release
 	
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
@@ -241,31 +243,32 @@ function check_heal(){
 
 # 升级程序
 function update_quil(){
-	stop_node
-	# switch to Gitlab repo of Cassie
-	cd ~/ceremonyclient
-	git checkout main
-	git branch -D release
-	git remote set-url origin https://github.com/quilibriumnetwork/ceremonyclient.git
-	git pull
-	git checkout release
-	
-	sudo rm -f /lib/systemd/system/ceremonyclient.service
-    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
-[Unit]
-Description=Ceremony Client Go App Service
-[Service]
-Type=simple
-Restart=always
-RestartSec=5s
-WorkingDirectory=$HOME/ceremonyclient/node
-Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
-[Install]
-WantedBy=multi-user.target
-EOF
-	sudo systemctl daemon-reload
-	start_node
+#	stop_node
+#	# switch to Gitlab repo of Cassie
+#	cd ~/ceremonyclient
+#	git checkout main
+#	git branch -D release
+#	git remote set-url origin https://github.com/quilibriumnetwork/ceremonyclient.git
+#	git pull
+#	git checkout release
+#	
+#	sudo rm -f /lib/systemd/system/ceremonyclient.service
+#    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
+#[Unit]
+#Description=Ceremony Client Go App Service
+#[Service]
+#Type=simple
+#Restart=always
+#RestartSec=5s
+#WorkingDirectory=$HOME/ceremonyclient/node
+#Environment=GOEXPERIMENT=arenas
+#ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
+#[Install]
+#WantedBy=multi-user.target
+#EOF
+#	sudo systemctl daemon-reload
+#	start_node
+	echo "等待官方新版释放..."
 }
 
 # 限制CPU使用率
