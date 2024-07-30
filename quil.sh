@@ -67,13 +67,16 @@ function install_node() {
 	gvm install go1.22.4
 	gvm use go1.22.4
 	
-	# 克隆仓库
-	#git clone https://github.com/quilibriumnetwork/ceremonyclient.git
-	git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
-	cd $HOME/ceremonyclient/node
-	git switch release-cdn
-	#git pull
-	#git checkout release
+	# quilibrium仓库
+	#git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
+	#cd $HOME/ceremonyclient/node
+	#git switch release-cdn
+	
+	# github仓库
+	git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
+	cd $HOME/ceremonyclient/
+	git pull
+	git checkout release
 	
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
@@ -209,7 +212,7 @@ function update_repair(){
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.21-linux-amd64 -node-info
+	cd ~/ceremonyclient/node && ./node-1.4.21.1-linux-amd64 -node-info
 }
 
 # 安装gRPC
