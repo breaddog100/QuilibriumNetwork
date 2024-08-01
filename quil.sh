@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240801001
+current_version=20240801002
 
 update_script() {
     # 指定URL
@@ -158,7 +158,7 @@ function backup_key(){
 	fi
 	
 	# 创建压缩文件
-	zip -r ~/quil_bak_$(date +%Y%m%d).zip .config
+	zip -r ~/quil_bak_$(hostname)_$(date +%Y%m%d).zip .config
 	echo "已将 .config目录压缩并保存到$HOME下"
 
 }
