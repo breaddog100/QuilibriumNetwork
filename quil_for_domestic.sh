@@ -1,7 +1,17 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240801002
+current_version=20240808001
+
+# 设置apt代理
+sudo bash -c 'echo -e "Acquire::http::Proxy \"http://10.88.128.10:1081/\";\nAcquire::https::Proxy \"http://10.88.128.10:1081/\";" > /etc/apt/apt.conf.d/95proxies'
+sudo bash -c 'echo -e "http_proxy=\"http://10.88.128.10:1081/\";\nhttps_proxy=\"http://10.88.128.10:1081/\";" > /etc/environment'
+# 设置git代理
+git config --global http.proxy http://10.88.128.10:1081
+git config --global https.proxy http://10.88.128.10:1081
+# 设置其他代理
+http_proxy="http://10.88.128.10:1081/"
+https_proxy="http://10.88.128.10:1081/"
 
 update_script() {
     # 指定URL
@@ -81,7 +91,7 @@ function install_node() {
 	else
 	    echo "当前swap大小已经满足要求或大于等于32GB，无需改动。"
 	fi
-	
+
     sudo apt update
     sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils jq coreutils unzip
 
@@ -105,10 +115,9 @@ function install_node() {
 	#git switch release-cdn
 	
 	# github仓库
-	git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
-	cd $HOME/ceremonyclient/
-	git pull
-	git checkout release
+	wget -e use_proxy=yes -e https_proxy=http://10.88.128.10:1081  https://github.com/QuilibriumNetwork/ceremonyclient/archive/refs/heads/release.zip
+	unzip release.zip
+	mv ceremonyclient-release/ ceremonyclient
 	
     sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
 [Unit]
@@ -257,9 +266,13 @@ function install_grpc(){
 	if [[ "$current_go_version" < "go1.22.4" ]]; then
 	  # 如果当前版本低于1.22.4，则使用 GVM 安装1.22.4
 	  echo "当前 Go 版本为 $current_go_version，低于1.22.4，开始安装1.22.4版本..."
-	  source $HOME/.gvm/scripts/gvm
-	  gvm install go1.22.4
-	  gvm use go1.22.4 --default
+	  # 安装 go
+		wget -e use_proxy=yes -e https_proxy=http://10.88.128.10:1081 https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
+		sudo tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
+		export PATH=$PATH:/usr/local/go/bin
+		echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+		source ~/.bashrc
+		go version
 	else
 	  echo "当前 Go 版本为 $current_go_version，不需要更新。"
 	fi
@@ -274,36 +287,6 @@ function install_grpc(){
 function check_heal(){
 	sudo journalctl -u ceremonyclient.service --no-hostname --since "today" | awk '/"current_frame"/ {print $1, $2, $3, $7}'
 	echo "提取了当天的日志，如果current_frame一直在增加，说明程序运行正常"
-}
-
-# 升级程序
-function update_quil(){
-#	stop_node
-#	# switch to Gitlab repo of Cassie
-#	cd ~/ceremonyclient
-#	git checkout main
-#	git branch -D release
-#	git remote set-url origin https://github.com/quilibriumnetwork/ceremonyclient.git
-#	git pull
-#	git checkout release
-#	
-#	sudo rm -f /lib/systemd/system/ceremonyclient.service
-#    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
-#[Unit]
-#Description=Ceremony Client Go App Service
-#[Service]
-#Type=simple
-#Restart=always
-#RestartSec=5s
-#WorkingDirectory=$HOME/ceremonyclient/node
-#Environment=GOEXPERIMENT=arenas
-#ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
-#[Install]
-#WantedBy=multi-user.target
-#EOF
-#	sudo systemctl daemon-reload
-#	start_node
-	echo "等待官方新版释放..."
 }
 
 # 限制CPU使用率
