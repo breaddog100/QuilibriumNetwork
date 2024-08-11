@@ -92,7 +92,7 @@ function install_node() {
 	sudo sysctl -p
 
 	# 安装 go
-	wget -e use_proxy=yes -e https_proxy=http://10.88.128.10:1081 https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
+	wget https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
 	sudo tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz
 	export PATH=$PATH:/usr/local/go/bin
 	echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
@@ -362,7 +362,7 @@ function main_menu() {
 		echo "Contabo机器如果无法安装请先运行【修复contabo】"
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
-    	echo "===================桃花潭水深千尺，不及汪伦送我情====================="
+    	echo "===================桃花潭水深千尺，不及汪伦送我情===================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
 	    echo "2. 备份节点 backup_key"
