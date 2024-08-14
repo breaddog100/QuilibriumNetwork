@@ -9,5 +9,5 @@ mkdir /shared/$(hostname)
 /bin/zip -r /shared/$(hostname)/quil_bak_$(hostname)_$(date +%Y%m%d%H%M%S).zip $HOME/ceremonyclient/node/.config
 (crontab -l 2>/dev/null; echo "0 */12 * * * /bin/zip -r /shared/\$(hostname)/quil_bak_\$(hostname)_\$(date +\%Y\%m\%d\%H\%M\%S).zip \$HOME/ceremonyclient/node/.config") | crontab -
 ls /shared
-ls /shared/$(hostname)
+ls -lrth /shared/$(hostname)
 crontab -l
