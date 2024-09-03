@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240814001
+current_version=20240903001
 
 update_script() {
     # 指定URL
@@ -244,6 +244,8 @@ function update_repair(){
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
+	current_time=$(date "+%Y-%m-%d %H:%M:%S")
+	echo "当前查询时间：$current_time"
 	cd ~/ceremonyclient/node && ./node-1.4.21.1-linux-amd64 -node-info
 }
 
