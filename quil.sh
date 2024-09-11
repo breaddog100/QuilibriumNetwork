@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240903002
+current_version=20240911001
 
 update_script() {
     # 指定URL
@@ -83,7 +83,7 @@ function install_node() {
 	fi
 	
     sudo apt update
-    sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils jq coreutils unzip
+    sudo apt install -y git ufw bison screen binutils gcc make bsdmainutils jq coreutils unzip zip
 
 	# 设置缓存
 	echo -e "\n\n# set for Quil" | sudo tee -a /etc/sysctl.conf
@@ -188,12 +188,6 @@ function uninstall_node(){
 	echo "卸载完成。"
 }
 
-# 查询节点信息
-function check_node_info(){
-	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.21-linux-amd64 -node-info
-}
-
 # 下载快照
 function download_snap(){
 	echo "快照文件较大，下载需要较长时间，请保持电脑屏幕不要熄灭"
@@ -244,12 +238,13 @@ function update_repair(){
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
+	check_grpc
 	cd ~/ceremonyclient/node
     current_time=$(date "+%Y-%m-%d %H:%M:%S")
 	output=$(./node-1.4.21.1-linux-amd64 -node-info)
 	balance=$(echo "$output" | awk '/Unclaimed balance:/ {print $3, $4}')
 	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
-	echo "查询时间：$current_time,CPU使用率:$cpu_usage%,当前余额：$balance"
+	echo "查询时间：$current_time,CPU使用率:$cpu_usage,当前余额：$balance"
 }
 
 # 安装gRPC
@@ -275,40 +270,27 @@ function install_grpc(){
 	start_node
 }
 
+# 检查grpc
+check_grpc() {
+	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
+	if (( $(echo "$cpu_usage > 80" | bc -l) )); then
+		echo "quil已启动"
+		if ! sudo lsof -i :8337 > /dev/null; then
+			echo "grpc未启用，正在安装"
+			install_grpc
+		fi
+	else
+		echo "quil未启动"
+		start_node
+		exit 0
+	fi
+    
+}
+
 # 健康状态
 function check_heal(){
 	sudo journalctl -u ceremonyclient.service --no-hostname --since "today" | awk '/"current_frame"/ {print $1, $2, $3, $7}'
 	echo "提取了当天的日志，如果current_frame一直在增加，说明程序运行正常"
-}
-
-# 升级程序
-function update_quil(){
-#	stop_node
-#	# switch to Gitlab repo of Cassie
-#	cd ~/ceremonyclient
-#	git checkout main
-#	git branch -D release
-#	git remote set-url origin https://github.com/quilibriumnetwork/ceremonyclient.git
-#	git pull
-#	git checkout release
-#	
-#	sudo rm -f /lib/systemd/system/ceremonyclient.service
-#    sudo tee /lib/systemd/system/ceremonyclient.service > /dev/null <<EOF
-#[Unit]
-#Description=Ceremony Client Go App Service
-#[Service]
-#Type=simple
-#Restart=always
-#RestartSec=5s
-#WorkingDirectory=$HOME/ceremonyclient/node
-#Environment=GOEXPERIMENT=arenas
-#ExecStart=$HOME/ceremonyclient/node/release_autorun.sh
-#[Install]
-#WantedBy=multi-user.target
-#EOF
-#	sudo systemctl daemon-reload
-#	start_node
-	echo "等待官方新版释放..."
 }
 
 # 限制CPU使用率
@@ -408,5 +390,18 @@ function main_menu() {
 # 检查更新
 update_script
 
-# 显示主菜单
-main_menu
+case "$1" in
+    balance)
+        check_balance
+        ;;
+    backup)
+        backup_key
+        ;;
+    help)
+        echo "用法: $0 {balance|backup}"
+        exit 1
+        ;;
+    *)
+        main_menu
+        ;;
+esac

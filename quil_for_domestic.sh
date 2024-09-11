@@ -253,7 +253,12 @@ function update_repair(){
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node && ./node-1.4.21.1-linux-amd64 -node-info
+	cd ~/ceremonyclient/node
+    current_time=$(date "+%Y-%m-%d %H:%M:%S")
+	output=$(./node-1.4.21.1-linux-amd64 -node-info)
+	balance=$(echo "$output" | awk '/Unclaimed balance:/ {print $3, $4}')
+	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
+	echo "查询时间：$current_time,CPU使用率:$cpu_usage%,当前余额：$balance"
 }
 
 # 安装gRPC
@@ -278,7 +283,7 @@ function install_grpc(){
 	fi
 
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-	wget --no-cache -O - https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
+	wget -e use_proxy=yes -e https_proxy=http://10.88.128.10:1081 https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
 	stop_node
 	start_node
 }
