@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240911001
+current_version=20240912001
 
 update_script() {
     # 指定URL
@@ -282,7 +282,6 @@ check_grpc() {
 	else
 		echo "quil未启动"
 		start_node
-		exit 0
 	fi
     
 }
