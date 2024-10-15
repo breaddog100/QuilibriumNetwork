@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015003
+current_version=20241015004
 
 update_script() {
     # 指定URL
@@ -363,6 +363,10 @@ function download_node_and_qclient(){
 		fi
 
 	done
+
+	echo "下载完成，正在重启..."
+	stop_node
+	start_node
 }
 
 # 主菜单
