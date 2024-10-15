@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015007
+current_version=20241015008
 
 update_script() {
     # 指定URL
@@ -338,7 +338,7 @@ function contabo(){
 
 function download_node_and_qclient(){
 
-	cd $HOME/ceremonyclient/node/
+	
 	
 	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     release_os="linux"
@@ -352,6 +352,7 @@ function download_node_and_qclient(){
 		release_arch="arm64"
 	fi
 
+	cd $HOME/ceremonyclient/client/
 	for files in $(curl -s https://releases.quilibrium.com/qclient-release | grep $release_os-$release_arch); do
 		echo "检查文件: $files"
 		
@@ -369,6 +370,7 @@ function download_node_and_qclient(){
 
 	done
 
+	cd $HOME/ceremonyclient/node/
 	for files in $(curl -s https://releases.quilibrium.com/release | grep $release_os-$release_arch); do
 		echo "检查文件: $files"
 		
