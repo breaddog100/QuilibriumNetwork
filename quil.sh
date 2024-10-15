@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015002
+current_version=20241015003
 
 update_script() {
     # 指定URL
@@ -336,6 +336,35 @@ function contabo(){
 	echo "已修复contabo网络"
 }
 
+function download_node_and_qclient(){
+
+	cd $HOME/ceremonyclient/node/
+	
+	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    release_os="linux"
+    if [[ $(uname -m) == "aarch64"* ]]; then
+        release_arch="arm64"
+    else
+        release_arch="amd64"
+    fi
+	else
+		release_os="darwin"
+		release_arch="arm64"
+	fi
+
+	for files in $(curl -s https://releases.quilibrium.com/qclient-release https://releases.quilibrium.com/release | grep $release_os-$release_arch); do
+		echo "下载文件: $files"
+		
+		if [ -f "$files" ]; then
+			echo "文件: $files 已存在"
+		else
+			echo "下载文件: $files"
+			curl -s -O "https://releases.quilibrium.com/$files"
+		fi
+
+	done
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -357,7 +386,7 @@ function main_menu() {
 	    echo "5. 停止节点 stop_node"
 	    echo "6. 启动节点 start_node"
 	    echo "7. 查询余额 check_balance"
-	    #echo "8. 升级程序 update_quil"
+	    echo "8. 更新2.0文件 download_node_and_qclient"
 	    echo "9. 限制CPU cpu_limited_rate"
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
@@ -373,7 +402,7 @@ function main_menu() {
 	    5) stop_node ;;
 	    6) start_node ;;
 	    7) check_balance ;;
-	    #8) update_quil ;;
+	    8) download_node_and_qclient ;;
 	    9) cpu_limited_rate ;;
 	    10) install_grpc ;;
 	    11) contabo ;;
