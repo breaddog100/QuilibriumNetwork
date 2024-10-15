@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015006
+current_version=20241015007
 
 update_script() {
     # 指定URL
@@ -352,7 +352,7 @@ function download_node_and_qclient(){
 		release_arch="arm64"
 	fi
 
-	for files in $(curl -s https://releases.quilibrium.com/qclient-release https://releases.quilibrium.com/release | grep $release_os-$release_arch); do
+	for files in $(curl -s https://releases.quilibrium.com/qclient-release | grep $release_os-$release_arch); do
 		echo "检查文件: $files"
 		
 		if [ -f "$files" ]; then
@@ -362,7 +362,24 @@ function download_node_and_qclient(){
 			curl -s -O "https://releases.quilibrium.com/$files"
 
 			version=$(echo "$files" | cut -d '-' -f 2)
-			if [[ "$files" == "qclient-$version-$release_os-$release_arch" || "$files" == "node-$version-$release_os-$release_arch" ]]; then
+			if [ "$files" == "qclient-$version-$release_os-$release_arch" ]; then
+				chmod +x "$files"
+			fi
+		fi
+
+	done
+
+	for files in $(curl -s https://releases.quilibrium.com/release | grep $release_os-$release_arch); do
+		echo "检查文件: $files"
+		
+		if [ -f "$files" ]; then
+			echo "文件: $files 已存在"
+		else
+			echo "下载文件: $files"
+			curl -s -O "https://releases.quilibrium.com/$files"
+
+			version=$(echo "$files" | cut -d '-' -f 2)
+			if [ "$files" == "node-$version-$release_os-$release_arch" ]; then
 				chmod +x "$files"
 			fi
 		fi
