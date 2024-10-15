@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20240912001
+current_version=20241015001
 
 update_script() {
     # 指定URL
@@ -168,7 +168,7 @@ function view_status(){
 # 停止节点
 function stop_node(){
 	sudo systemctl stop ceremonyclient
-	ps aux | grep 'node-' | grep -v grep | awk '{print $2}' | sudo xargs kill -9
+	#ps aux | grep 'node-' | grep -v grep | awk '{print $2}' | sudo xargs kill -9
 	echo "quil 节点已停止"
 }
 
