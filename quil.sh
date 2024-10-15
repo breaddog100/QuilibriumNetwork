@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015005
+current_version=20241015006
 
 update_script() {
     # 指定URL
@@ -360,6 +360,11 @@ function download_node_and_qclient(){
 		else
 			echo "下载文件: $files"
 			curl -s -O "https://releases.quilibrium.com/$files"
+
+			version=$(echo "$files" | cut -d '-' -f 2)
+			if [[ "$files" == "qclient-$version-$release_os-$release_arch" || "$files" == "node-$version-$release_os-$release_arch" ]]; then
+				chmod +x "$files"
+			fi
 		fi
 
 	done
