@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015001
+current_version=20241015002
 
 update_script() {
     # 指定URL
@@ -357,7 +357,7 @@ function main_menu() {
 	    echo "5. 停止节点 stop_node"
 	    echo "6. 启动节点 start_node"
 	    echo "7. 查询余额 check_balance"
-	    echo "8. 升级程序 update_quil"
+	    #echo "8. 升级程序 update_quil"
 	    echo "9. 限制CPU cpu_limited_rate"
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
@@ -373,7 +373,7 @@ function main_menu() {
 	    5) stop_node ;;
 	    6) start_node ;;
 	    7) check_balance ;;
-	    8) update_quil ;;
+	    #8) update_quil ;;
 	    9) cpu_limited_rate ;;
 	    10) install_grpc ;;
 	    11) contabo ;;
