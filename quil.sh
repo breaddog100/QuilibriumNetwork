@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241015008
+current_version=20241017001
 
 update_script() {
     # 指定URL
@@ -337,8 +337,6 @@ function contabo(){
 }
 
 function download_node_and_qclient(){
-
-	
 	
 	if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     release_os="linux"
@@ -352,6 +350,8 @@ function download_node_and_qclient(){
 		release_arch="arm64"
 	fi
 
+	is_update=0
+
 	cd $HOME/ceremonyclient/client/
 	for files in $(curl -s https://releases.quilibrium.com/qclient-release | grep $release_os-$release_arch); do
 		echo "检查文件: $files"
@@ -359,6 +359,7 @@ function download_node_and_qclient(){
 		if [ -f "$files" ]; then
 			echo "文件: $files 已存在"
 		else
+			is_update=1
 			echo "下载文件: $files"
 			curl -s -O "https://releases.quilibrium.com/$files"
 
@@ -377,6 +378,7 @@ function download_node_and_qclient(){
 		if [ -f "$files" ]; then
 			echo "文件: $files 已存在"
 		else
+			is_update=1
 			echo "下载文件: $files"
 			curl -s -O "https://releases.quilibrium.com/$files"
 
@@ -388,9 +390,14 @@ function download_node_and_qclient(){
 
 	done
 
-	echo "下载完成，正在重启..."
-	stop_node
-	start_node
+	if [ "$is_update" -eq 1 ]; then
+		echo "更新完成，正在重启..."
+		stop_node
+		start_node
+	else
+		echo "当前程序已经是最新，无需更新..."
+	fi
+	
 }
 
 # 主菜单
