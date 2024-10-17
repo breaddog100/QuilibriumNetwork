@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241017001
+current_version=20241017002
 
 update_script() {
     # 指定URL
@@ -359,7 +359,6 @@ function download_node_and_qclient(){
 		if [ -f "$files" ]; then
 			echo "文件: $files 已存在"
 		else
-			is_update=1
 			echo "下载文件: $files"
 			curl -s -O "https://releases.quilibrium.com/$files"
 

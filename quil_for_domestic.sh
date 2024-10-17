@@ -8,7 +8,7 @@ sudo bash -c 'echo -e "Acquire::http::Proxy \"http://10.88.128.10:1081/\";\nAcqu
 sudo bash -c 'echo -e "http_proxy=\"http://10.88.128.10:1081/\";\nhttps_proxy=\"http://10.88.128.10:1081/\";" > /etc/environment'
 # 设置git代理
 git config --global http.proxy http://10.88.128.10:1081
-git config --global https.proxy wget "https://releases.quilibrium.com/$file" -O "$file"
+git config --global https.proxy http://10.88.128.10:1081
 # 设置go代理
 export GO111MODULE=on
 export GOPROXY=https://goproxy.cn,direct
