@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241017004
+current_version=20241017005
 
 update_script() {
     # 指定URL
@@ -246,7 +246,7 @@ function check_balance(){
 	balance=$(echo "$output" | awk '/Owned balance:/ {print $3, $4}')
 	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
 	./node-2.0.0.7-linux-amd64 -node-info
-	echo "查询时间:$current_time,PeerID:$peerid,CPU使用率:$cpu_usage,当前余额:$balance"
+	echo "查询时间:$current_time,PeerID:$peerid,CPU使用率:$cpu_usage%,当前余额:$balance"
 }
 
 # 安装gRPC
