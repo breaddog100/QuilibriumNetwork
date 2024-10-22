@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241017005
+current_version=20241022001
 
 update_script() {
     # 指定URL
@@ -99,11 +99,6 @@ function install_node() {
 	source ~/.bashrc
 	go version
 	
-	# quilibrium仓库
-	#git clone https://source.quilibrium.com/quilibrium/ceremonyclient.git
-	#cd $HOME/ceremonyclient/node
-	#git switch release-cdn
-	
 	# github仓库
 	git clone https://github.com/QuilibriumNetwork/ceremonyclient.git
 	cd $HOME/ceremonyclient/
@@ -168,7 +163,7 @@ function view_status(){
 # 停止节点
 function stop_node(){
 	sudo systemctl stop ceremonyclient
-	#ps aux | grep 'node-' | grep -v grep | awk '{print $2}' | sudo xargs kill -9
+	sudo systemctl stop ceremonyclient14211
 	echo "quil 节点已停止"
 }
 
@@ -180,7 +175,6 @@ function start_node(){
 
 # 卸载节点
 function uninstall_node(){
-    #screen -S quil -X quit
     sudo systemctl stop ceremonyclient
     screen -ls | grep -Po '\t\d+\.quil\t' | grep -Po '\d+' | xargs -r kill
 	rm -rf $HOME/ceremonyclient
@@ -401,6 +395,55 @@ function download_node_and_qclient(){
 	
 }
 
+function start_node_14211(){
+	echo "此功能会先停止当前运行的quil，然后启动1.4.21.1程序。"
+	echo "期间请留意2.0是否能运行，如果能运行则请运行脚本5停止节点，然后脚本6启动脚本即可。"
+	stop_node
+	cd $HOME/ceremonyclient/node/
+	files=(
+	"node-1.4.21.1-linux-amd64"
+	"node-1.4.21.1-linux-amd64.dgst.sig.13"
+	"node-1.4.21.1-linux-amd64.dgst.sig.17"
+	"node-1.4.21.1-linux-amd64.dgst.sig.8"
+	"node-1.4.21.1-linux-amd64.dgst"
+	"node-1.4.21.1-linux-amd64.dgst.sig.15"
+	"node-1.4.21.1-linux-amd64.dgst.sig.2"
+	"node-1.4.21.1-linux-amd64.dgst.sig.9"
+	"node-1.4.21.1-linux-amd64.dgst.sig.1"
+	"node-1.4.21.1-linux-amd64.dgst.sig.16"
+	"node-1.4.21.1-linux-amd64.dgst.sig.3"
+	)
+
+	for file in "${files[@]}"; do
+	if [ -e "$file" ]; then
+		echo "文件 $file 已存在，跳过"
+	else
+		echo "正在下载文件：$file"
+		curl -s -O "https://releases.quilibrium.com/$file"
+	fi
+	done
+
+	chmod +x node-1.4.21.1-linux-amd64
+
+	sudo tee /lib/systemd/system/ceremonyclient14211.service > /dev/null <<EOF
+[Unit]
+Description=Ceremony14211 Client Go App Service
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=$HOME/ceremonyclient/node
+Environment=GOEXPERIMENT=arenas
+ExecStart=$HOME/ceremonyclient/node/node-1.4.21.1-linux-amd64
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl start ceremonyclient14211
+
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -422,10 +465,11 @@ function main_menu() {
 	    echo "5. 停止节点 stop_node"
 	    echo "6. 启动节点 start_node"
 	    echo "7. 查询余额 check_balance"
-	    echo "8. 更新2.0文件 download_node_and_qclient"
+	    echo "8. 升级2.0 download_node_and_qclient"
 	    echo "9. 限制CPU cpu_limited_rate"
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
+		echo "12. 运行1.4.21.1程序 start_node_14211"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -442,6 +486,7 @@ function main_menu() {
 	    9) cpu_limited_rate ;;
 	    10) install_grpc ;;
 	    11) contabo ;;
+		12) start_node_14211 ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
