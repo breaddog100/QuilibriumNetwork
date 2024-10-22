@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241022001
+current_version=20241022002
 
 update_script() {
     # 指定URL
@@ -423,7 +423,7 @@ function start_node_14211(){
 	fi
 	done
 
-	chmod +x node-1.4.21.1-linux-amd64
+	sudo chmod +x node-1.4.21.1-linux-amd64
 
 	sudo tee /lib/systemd/system/ceremonyclient14211.service > /dev/null <<EOF
 [Unit]
@@ -441,6 +441,9 @@ EOF
 
     sudo systemctl daemon-reload
     sudo systemctl start ceremonyclient14211
+
+	echo "Quil 1.4.21.1 已启动"
+	echo "查看日志：sudo journalctl -u ceremonyclient14211.service -f --no-hostname -o cat"
 
 }
 
