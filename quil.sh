@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241022003
+current_version=20241022004
 
 update_script() {
     # 指定URL
@@ -163,7 +163,9 @@ function view_status(){
 # 停止节点
 function stop_node(){
 	sudo systemctl stop ceremonyclient
-	sudo systemctl stop ceremonyclient14211
+	if systemctl list-unit-files | grep -q 'ceremonyclient14211\.service'; then
+		sudo systemctl stop ceremonyclient14211
+	fi
 	echo "quil 节点已停止"
 }
 
