@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241022004
+current_version=20241024001
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
 update_script() {
     # 指定URL
@@ -447,12 +453,74 @@ EOF
 		sudo systemctl start ceremonyclient14211
 	fi
 
-	
-
 	echo "Quil 1.4.21.1 已启动"
 	echo "查看日志：sudo journalctl -u ceremonyclient14211.service -f --no-hostname -o cat"
 	echo "查看余额：cd $HOME/ceremonyclient/node && ./node-1.4.21.1-linux-amd64 -node-info"
 
+}
+
+# 检查frames同步状态
+
+install_dependencies() {
+	local pkg_name
+	echo -e "${YELLOW}安装依赖包：${NC}"
+	sudo apt update -qq
+	
+	for pkg_name in "jq" "bc" "cron"; do
+		if ! sudo apt install -y "$pkg_name"; then
+			echo -e "${RED}安装失败 $pkg_name${NC}"
+			return 1
+		fi
+		echo -e "${GREEN}$pkg_name 安装成功${NC}"
+	done
+	
+	echo
+	sleep 1
+	return 0
+}
+
+function qnode_check_for_frames(){
+
+	echo -e "${GREEN}此功能会监控同步状态，如果超过10分钟没有同步则会重启节点${NC}"
+	sleep 5
+
+	FILE="${HOME}/qnode_check_for_frames.sh"
+
+	if [ -f "$FILE" ]; then
+		CRON_JOB="*/10 * * * * ${HOME}/qnode_check_for_frames.sh >> ${HOME}/qnode_check_for_frames.log 2>&1"
+
+		if crontab -l | grep -qF "$CRON_JOB"; then
+			:
+		else
+			(crontab -l 2>/dev/null; echo "*/10 * * * * ${HOME}/qnode_check_for_frames.sh >> ${HOME}/qnode_check_for_frames.log 2>&1") | crontab -
+		fi
+		echo "已设置每隔10分钟检查一次同步状态"
+		
+	else
+		stop_node
+		download_node_and_qclient
+
+		# Install dependencies
+		if ! install_dependencies; then
+			exit 1
+		fi
+		if ! curl -sSL "https://raw.githubusercontent.com/lamat1111/QuilibriumScripts/main/test/qnode_check_for_frames.sh" -o ~/qnode_check_for_frames.sh; then
+			echo -e "${RED}脚本下载失败${NC}"
+			exit 1
+		fi
+		echo -e "${GREEN}脚本下载成功${NC}"
+		echo
+		sleep 1
+		if ! chmod +x ~/qnode_check_for_frames.sh; then
+			echo -e "${RED}Failed to make script executable${NC}"
+			exit 1
+		fi
+		(crontab -l 2>/dev/null; echo "*/10 * * * * ${HOME}/qnode_check_for_frames.sh >> ${HOME}/qnode_check_for_frames.log 2>&1") | crontab -
+		start_node
+
+		echo -e "${GREEN}已设置为每隔10分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/qnode_check_for_frames.log${NC}"
+		
+	fi
 }
 
 # 主菜单
@@ -481,6 +549,7 @@ function main_menu() {
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
 		echo "12. 运行1.4.21.1程序 start_node_14211"
+		echo "13. 监控同步状态 qnode_check_for_frames"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -498,6 +567,7 @@ function main_menu() {
 	    10) install_grpc ;;
 	    11) contabo ;;
 		12) start_node_14211 ;;
+		13) qnode_check_for_frames ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
