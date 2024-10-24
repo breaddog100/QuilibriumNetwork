@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241024002
+current_version=20241024003
 
 # Colors for output
 RED='\033[0;31m'
@@ -500,6 +500,7 @@ function qnode_check_for_frames(){
 		echo "正在停止节点..."
 		stop_node
 		download_node_and_qclient
+		mkdir -p ~/scripts
 
 		# Install dependencies
 		if ! install_dependencies; then
