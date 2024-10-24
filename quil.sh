@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241024001
+current_version=20241024002
 
 # Colors for output
 RED='\033[0;31m'
@@ -484,19 +484,20 @@ function qnode_check_for_frames(){
 	echo -e "${GREEN}此功能会监控同步状态，如果超过10分钟没有同步则会重启节点${NC}"
 	sleep 5
 
-	FILE="${HOME}/qnode_check_for_frames.sh"
+	FILE="${HOME}/scripts/qnode_check_for_frames.sh"
 
 	if [ -f "$FILE" ]; then
-		CRON_JOB="*/10 * * * * ${HOME}/qnode_check_for_frames.sh >> ${HOME}/qnode_check_for_frames.log 2>&1"
+		CRON_JOB="*/10 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh"
 
 		if crontab -l | grep -qF "$CRON_JOB"; then
 			:
 		else
-			(crontab -l 2>/dev/null; echo "*/10 * * * * ${HOME}/qnode_check_for_frames.sh >> ${HOME}/qnode_check_for_frames.log 2>&1") | crontab -
+			(crontab -l 2>/dev/null; echo "*/10 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
 		fi
 		echo "已设置每隔10分钟检查一次同步状态"
 		
 	else
+		echo "正在停止节点..."
 		stop_node
 		download_node_and_qclient
 
@@ -504,21 +505,21 @@ function qnode_check_for_frames(){
 		if ! install_dependencies; then
 			exit 1
 		fi
-		if ! curl -sSL "https://raw.githubusercontent.com/lamat1111/QuilibriumScripts/main/test/qnode_check_for_frames.sh" -o ~/qnode_check_for_frames.sh; then
+		if ! curl -sSL "https://raw.githubusercontent.com/lamat1111/QuilibriumScripts/main/test/qnode_check_for_frames.sh" -o ~/scripts/qnode_check_for_frames.sh; then
 			echo -e "${RED}脚本下载失败${NC}"
 			exit 1
 		fi
 		echo -e "${GREEN}脚本下载成功${NC}"
 		echo
 		sleep 1
-		if ! chmod +x ~/qnode_check_for_frames.sh; then
+		if ! chmod +x ~/scripts/qnode_check_for_frames.sh; then
 			echo -e "${RED}Failed to make script executable${NC}"
 			exit 1
 		fi
-		(crontab -l 2>/dev/null; echo "*/10 * * * * ${HOME}/qnode_check_for_frames.sh >> ${HOME}/qnode_check_for_frames.log 2>&1") | crontab -
+		(crontab -l 2>/dev/null; echo "*/10 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
 		start_node
 
-		echo -e "${GREEN}已设置为每隔10分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/qnode_check_for_frames.log${NC}"
+		echo -e "${GREEN}已设置为每隔10分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/scripts/qnode_check_for_frames.log${NC}"
 		
 	fi
 }
