@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241024003
+current_version=20241024004
 
 # Colors for output
 RED='\033[0;31m'
@@ -520,7 +520,7 @@ function qnode_check_for_frames(){
 		(crontab -l 2>/dev/null; echo "*/10 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
 		start_node
 
-		echo -e "${GREEN}已设置为每隔10分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/scripts/qnode_check_for_frames.log${NC}"
+		echo -e "${GREEN}已设置为每隔10分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/scripts/logs/qnode_check_for_frames.log${NC}"
 		
 	fi
 }
