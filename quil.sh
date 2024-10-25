@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241024004
+current_version=20241025001
 
 # Colors for output
 RED='\033[0;31m'
@@ -237,8 +237,8 @@ function update_repair(){
     fi
 }
 
-# 查询余额
-function check_balance(){
+# 节点信息
+function node_info(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	check_grpc
 	cd ~/ceremonyclient/node
@@ -249,6 +249,13 @@ function check_balance(){
 	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
 	./node-2.0.0.7-linux-amd64 -node-info
 	echo "查询时间:$current_time,PeerID:$peerid,CPU使用率:$cpu_usage%,当前余额:$balance"
+}
+
+# 查询余额
+function check_balance(){
+	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
+	cd ~/ceremonyclient/node
+	./../client/qclient-2.0.1-linux-amd64 token balance
 }
 
 # 安装gRPC
