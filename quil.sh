@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241025002
+current_version=20241025003
 
 # Colors for output
 RED='\033[0;31m'
@@ -494,12 +494,12 @@ function qnode_check_for_frames(){
 	FILE="${HOME}/scripts/qnode_check_for_frames.sh"
 
 	if [ -f "$FILE" ]; then
-		CRON_JOB="*/10 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh"
+		CRON_JOB="*/30 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh"
 
 		if crontab -l | grep -qF "$CRON_JOB"; then
 			:
 		else
-			(crontab -l 2>/dev/null; echo "*/10 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
+			(crontab -l 2>/dev/null; echo "*/30 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
 		fi
 		echo "已设置每隔30分钟检查一次同步状态"
 		
@@ -527,7 +527,7 @@ function qnode_check_for_frames(){
 		(crontab -l 2>/dev/null; echo "*/30 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
 		start_node
 
-		echo -e "${GREEN}已设置为每隔10分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/scripts/logs/qnode_check_for_frames.log${NC}"
+		echo -e "${GREEN}已设置为每隔30分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/scripts/logs/qnode_check_for_frames.log${NC}"
 		
 	fi
 }
