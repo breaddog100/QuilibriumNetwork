@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241027001
+current_version=20241029001
 
 # Colors for output
 RED='\033[0;31m'
@@ -255,7 +255,7 @@ function node_info(){
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node
-	./../client/qclient-2.0.1-linux-amd64 token balance
+	./../client/qclient-2.0.2.3-linux-amd64 token balance
 }
 
 # 安装gRPC
