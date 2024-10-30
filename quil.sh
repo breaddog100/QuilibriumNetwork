@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241030002
+current_version=20241030003
 
 # Colors for output
 RED='\033[0;31m'
@@ -542,7 +542,7 @@ function mining_status(){
 
 	# 判断 increment 的值并输出相应的信息
 	if [ "$increment" -eq 0 ]; then
-		echo "已完成铸造，请使用如下钱包地址到网站查询余额，虽然余额显示0，但仍然是完成了铸造。"
+		echo "已完成铸造，请使用如下钱包地址到网站查询余额，余额可能显示0，但仍然是完成了铸造。"
 		check_balance
 	else
 		echo "正在铸造，仍需努力，increment：$increment"
