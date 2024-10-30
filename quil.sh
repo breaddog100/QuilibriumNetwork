@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241030001
+current_version=20241030002
 
 # Colors for output
 RED='\033[0;31m'
@@ -538,7 +538,7 @@ function mining_status(){
 	last_log=$(journalctl -u ceremonyclient.service --no-hostname -g "increment" -r -n 1)
 
 	# 提取 increment 的值
-	increment=$(echo "$last_log" | grep -o '"increment":[0-9]*' | awk -F: '{print \$2}')
+	increment=$(echo "$last_log" | grep -o '"increment":[0-9]*' | awk -F: '{print $2}')
 
 	# 判断 increment 的值并输出相应的信息
 	if [ "$increment" -eq 0 ]; then
