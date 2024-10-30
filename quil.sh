@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241029001
+current_version=20241030001
 
 # Colors for output
 RED='\033[0;31m'
@@ -532,6 +532,23 @@ function qnode_check_for_frames(){
 	fi
 }
 
+# 铸造进度
+function mining_status(){
+	# 获取最后一条日志记录中包含 "increment" 的行
+	last_log=$(journalctl -u ceremonyclient.service --no-hostname -g "increment" -r -n 1)
+
+	# 提取 increment 的值
+	increment=$(echo "$last_log" | grep -o '"increment":[0-9]*' | awk -F: '{print \$2}')
+
+	# 判断 increment 的值并输出相应的信息
+	if [ "$increment" -eq 0 ]; then
+		echo "已完成铸造，请使用如下钱包地址到网站查询余额，虽然余额显示0，但仍然是完成了铸造。"
+		check_balance
+	else
+		echo "正在铸造，仍需努力，increment：$increment"
+	fi
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -559,6 +576,7 @@ function main_menu() {
 	    echo "11. 修复contabo contabo"
 		echo "12. 运行1.4.21.1程序 start_node_14211"
 		echo "13. 监控同步状态 qnode_check_for_frames"
+		echo "14. 铸造进度 mining_status"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -577,6 +595,7 @@ function main_menu() {
 	    11) contabo ;;
 		12) start_node_14211 ;;
 		13) qnode_check_for_frames ;;
+		14) mining_status ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
