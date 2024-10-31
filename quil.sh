@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031005
+current_version=20241031006
 
 # Colors for output
 RED='\033[0;31m'
@@ -583,7 +583,7 @@ function switch_rpc(){
 function coins_transfer(){
 	# 转出操作
 	echo "开始转移..."
-	read -p "请输入主钱包地址（0x开头）:" main_wallet
+	read -p "请输入主钱包地址(0x开头):" main_wallet
 	stop_node
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
@@ -599,10 +599,10 @@ function check_pre_transfer(){
 	echo -e "本操作请在${RED}转出钱包机器上${NC}执行。"
 	check_balance
 	echo "上述查询中：balance和COINS都有值，且均大于0，才能转账，否则还需要等待继续铸造。"
-	echo "请先到主钱包机器获取主钱包地址（运行脚本14会看到0x开头的地址）"
+	echo "请先到主钱包机器获取主钱包地址(运行脚本14会看到0x开头的地址)"
 	echo "本操作会把本机的代币转账到你输入的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！"
 	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将本机的代币转移到主钱包地址。"
-	read -r -p "请确认：[Y/N]" response
+	read -r -p "请确认：[Y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
             coins_transfer
@@ -621,9 +621,9 @@ function coins_merge(){
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
-	coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
-	#./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token merge
-	./qclient-2.0.2.3-linux-amd64 token merge $sub_wallet --config $CONFIG_PATH
+	#coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
+	./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token merge
+	#./qclient-2.0.2.3-linux-amd64 token merge $sub_wallet --config $CONFIG_PATH
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
@@ -635,7 +635,7 @@ function check_pre_merge(){
 	echo "上述查询中：balance和COINS都有值，且均大于0，才能归集，否则还需要等待继续铸造。"
 	echo "本操作会把转账机器的代币合并到本机，会用到转账结束后输出的COINS地址。"
 	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将转移到本机的代币合并到本机主钱包。"
-	read -r -p "请确认：[Y/N]" response
+	read -r -p "请确认：[Y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
             coins_merge
