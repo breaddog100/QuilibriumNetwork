@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031006
+current_version=20241031007
 
 # Colors for output
 RED='\033[0;31m'
@@ -582,26 +582,25 @@ function switch_rpc(){
 # 代币转账
 function coins_transfer(){
 	# 转出操作
-	echo "开始转移..."
 	read -p "请输入主钱包地址(0x开头):" main_wallet
+	echo "开始转移..."
 	stop_node
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
 	./qclient-2.0.2.3-linux-amd64 token transfer $main_wallet $coins_addr --config $CONFIG_PATH
-	echo "转移完成，请运行脚本16，到主钱包中进行合并。"
+	echo "转移完成，请到主钱包中运行脚本16进行合并。"
 }
 
 # 转账检查
 function check_pre_transfer(){
 	echo ""
-	echo -e "本操作请在${RED}转出钱包机器上${NC}执行。"
+	echo "请先到主钱包机器获取主钱包地址(运行脚本14会看到0x开头的地址)"
+	echo -e "${RED}本操作会把本机的代币转到你的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！${NC}"
+
 	check_balance
 	echo "上述查询中：balance和COINS都有值，且均大于0，才能转账，否则还需要等待继续铸造。"
-	echo "请先到主钱包机器获取主钱包地址(运行脚本14会看到0x开头的地址)"
-	echo "本操作会把本机的代币转账到你输入的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！"
-	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将本机的代币转移到主钱包地址。"
 	read -r -p "请确认：[Y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
@@ -621,9 +620,7 @@ function coins_merge(){
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
-	#coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
 	./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token merge
-	#./qclient-2.0.2.3-linux-amd64 token merge $sub_wallet --config $CONFIG_PATH
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
@@ -674,8 +671,8 @@ function main_menu() {
 		#echo "12. 运行1.4.21.1程序 start_node_14211"
 		#echo "13. 监控同步状态 qnode_check_for_frames"
 		echo "14. 铸造进度 mining_status"
-		#echo "15. 代币转账(子钱包运行) check_pre_transfer"
-		#echo "16. 代币合并(主钱包运行) check_pre_merge"
+		echo "15. 代币转账(在子钱包运行) check_pre_transfer"
+		echo "16. 代币合并(在主钱包运行) check_pre_merge"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
