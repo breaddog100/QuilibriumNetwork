@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031001
+current_version=20241031002
 
 # Colors for output
 RED='\033[0;31m'
@@ -266,8 +266,6 @@ function check_balance(){
 	cd ~/ceremonyclient/node
 	echo "查询余额："
 	./../client/qclient-2.0.2.3-linux-amd64 token balance
-	echo "查询UTXO："
-	./../client/qclient-2.0.2.3-linux-amd64 token coins
 }
 
 # 安装gRPC
@@ -578,18 +576,18 @@ function switch_rpc(){
 }
 
 # 查询UTXO
-function check_balance(){
+function check_utxo(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node
+	echo "查询UTXO："
 	./../client/qclient-2.0.2.3-linux-amd64 token coins
 }
 
-# 代币转账
+#
 function coins_transfer(){
-	
-	# 转出钱包操作
+	# 转出操作
 	echo "请先到主钱包机器获取主钱包地址（运行脚本14会看到0x开头的地址）"
-	echo "本次操作会把本机的代币，转账到你输入的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！"
+	echo "本操作会把本机的代币，转账到你输入的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！"
 	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将本机的代币转移到主钱包地址。"
 
 	echo "确定要转移代币。[Y/N]"
@@ -597,20 +595,37 @@ function coins_transfer(){
     case "$response" in
         [yY][eE][sS]|[yY]) 
             echo "开始转移..."
+			read -p "请输入主钱包地址（0x开头）:" main_wallet
             stop_node
 			switch_rpc "1"
 			CONFIG_PATH=$HOME/ceremonyclient/node/.config
 			cd $HOME/ceremonyclient/client
 			coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
-	
+			./qclient-2.0.2.3-linux-amd64 token transfer $main_wallet $coins_addr --config $HOME/ceremonyclient/node/.config
 			echo "转移完成。"
             ;;
         *)
             echo "取消操作。"
             ;;
     esac
+}
 
-	read -p "主钱包地址:" main_wallet
+# 代币转账
+function check_preconditions(){
+	
+	check_balance
+	check_utxo
+
+	echo "请确定上述查询中：balance和COINS都有值，且均大于0，否则转币会失败。[Y/N]"
+	read -r -p "请确认: " response
+    case "$response" in
+        [yY][eE][sS]|[yY]) 
+            coins_transfer
+            ;;
+        *)
+            echo "取消操作。"
+            ;;
+    esac
 
 }
 
@@ -642,7 +657,7 @@ function main_menu() {
 		#echo "12. 运行1.4.21.1程序 start_node_14211"
 		#echo "13. 监控同步状态 qnode_check_for_frames"
 		echo "14. 铸造进度 mining_status"
-		#echo "15. 代币转账 coins_transfer"
+		#echo "15. 代币转账 check_preconditions"
 		#echo "15. 代币归集 coins_"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
