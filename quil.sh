@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031002
+current_version=20241031003
 
 # Colors for output
 RED='\033[0;31m'
@@ -266,6 +266,8 @@ function check_balance(){
 	cd ~/ceremonyclient/node
 	echo "查询余额："
 	./../client/qclient-2.0.2.3-linux-amd64 token balance
+	echo "查询UTXO："
+	./../client/qclient-2.0.2.3-linux-amd64 token coins
 }
 
 # 安装gRPC
@@ -575,14 +577,6 @@ function switch_rpc(){
     fi
 }
 
-# 查询UTXO
-function check_utxo(){
-	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	cd ~/ceremonyclient/node
-	echo "查询UTXO："
-	./../client/qclient-2.0.2.3-linux-amd64 token coins
-}
-
 #
 function coins_transfer(){
 	# 转出操作
@@ -614,7 +608,6 @@ function coins_transfer(){
 function check_preconditions(){
 	
 	check_balance
-	check_utxo
 
 	echo "请确定上述查询中：balance和COINS都有值，且均大于0，否则转币会失败。[Y/N]"
 	read -r -p "请确认: " response
