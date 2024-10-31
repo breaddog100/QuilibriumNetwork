@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031007
+current_version=20241031008
 
 # Colors for output
 RED='\033[0;31m'
@@ -554,10 +554,10 @@ function mining_status(){
 
 	# 判断 increment 的值并输出相应的信息
 	if [ "$increment" -eq 0 ]; then
-		echo "已完成铸造，请使用如下钱包地址到网站查询余额，余额可能显示0，但仍然是完成了铸造。"
+		echo "已完成铸造，请使用如下钱包地址到网站查询余额，如果余额为0，说明还未同步到本地。"
 		check_balance
 	else
-		echo "正在铸造，仍需努力，increment：$increment"
+		echo "正在铸造，increment：$increment"
 	fi
 }
 
@@ -668,7 +668,7 @@ function main_menu() {
 	    echo "9. 限制CPU cpu_limited_rate"
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
-		#echo "12. 运行1.4.21.1程序 start_node_14211"
+		echo "12. 公共RPC switch_rpc"
 		#echo "13. 监控同步状态 qnode_check_for_frames"
 		echo "14. 铸造进度 mining_status"
 		echo "15. 代币转账(在子钱包运行) check_pre_transfer"
@@ -689,7 +689,7 @@ function main_menu() {
 	    9) cpu_limited_rate ;;
 	    10) install_grpc ;;
 	    11) contabo ;;
-		12) start_node_14211 ;;
+		12) switch_rpc "1" ;;
 		13) qnode_check_for_frames ;;
 		14) mining_status ;;
 		15) check_pre_transfer ;;
