@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031004
+current_version=20241031005
 
 # Colors for output
 RED='\033[0;31m'
@@ -572,6 +572,8 @@ function switch_rpc(){
         echo "切换为自有RPC"
 		sed -i 's|listenGrpcMultiaddr: ""|listenGrpcMultiaddr: "/ip4/127.0.0.1/tcp/8337"|' config.yml
 		sed -i 's|listenRESTMultiaddr: ""|listenRESTMultiaddr: "/ip4/127.0.0.1/tcp/8338"|' config.yml
+		stop_node
+		start_node
     else
         echo "切换RPC参数错误"
     fi
@@ -580,34 +582,26 @@ function switch_rpc(){
 # 代币转账
 function coins_transfer(){
 	# 转出操作
-	echo "请先到主钱包机器获取主钱包地址（运行脚本14会看到0x开头的地址）"
-	echo "本操作会把本机的代币，转账到你输入的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！"
-	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将本机的代币转移到主钱包地址。"
-
-	read -r -p "确定要转移代币：[Y/N]" response
-    case "$response" in
-        [yY][eE][sS]|[yY]) 
-            echo "开始转移..."
-			read -p "请输入主钱包地址（0x开头）:" main_wallet
-            stop_node
-			switch_rpc "1"
-			CONFIG_PATH=$HOME/ceremonyclient/node/.config
-			cd $HOME/ceremonyclient/client
-			coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
-			./qclient-2.0.2.3-linux-amd64 token transfer $main_wallet $coins_addr --config $CONFIG_PATH
-			echo -e "转移完成，${RED}请记录本机COINS地址：$coins_addr ${NC}，在下一步主钱包归集是要用到。"
-            ;;
-        *)
-            echo "取消操作。"
-            ;;
-    esac
+	echo "开始转移..."
+	read -p "请输入主钱包地址（0x开头）:" main_wallet
+	stop_node
+	switch_rpc "1"
+	CONFIG_PATH=$HOME/ceremonyclient/node/.config
+	cd $HOME/ceremonyclient/client
+	coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
+	./qclient-2.0.2.3-linux-amd64 token transfer $main_wallet $coins_addr --config $CONFIG_PATH
+	echo "转移完成，请运行脚本16，到主钱包中进行合并。"
 }
 
 # 转账检查
 function check_pre_transfer(){
+	echo ""
 	echo -e "本操作请在${RED}转出钱包机器上${NC}执行。"
 	check_balance
 	echo "上述查询中：balance和COINS都有值，且均大于0，才能转账，否则还需要等待继续铸造。"
+	echo "请先到主钱包机器获取主钱包地址（运行脚本14会看到0x开头的地址）"
+	echo "本操作会把本机的代币转账到你输入的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！"
+	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将本机的代币转移到主钱包地址。"
 	read -r -p "请确认：[Y/N]" response
     case "$response" in
         [yY][eE][sS]|[yY]) 
@@ -622,44 +616,25 @@ function check_pre_transfer(){
 # 代币合并
 function coins_merge(){
 	# 合并操作
-	echo "本操作会把转账机器的代币合并到本机，会用到转账结束后输出的COINS地址。"
-	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将转移到本机的代币合并到本机主钱包。"
-
-	read -r -p "确定要合并代币：[Y/N]" response
-    case "$response" in
-        [yY][eE][sS]|[yY]) 
-            echo "开始合并..."
-            stop_node
-			switch_rpc "1"
-			CONFIG_PATH=$HOME/ceremonyclient/node/.config
-			cd $HOME/ceremonyclient/client
-
-			# 合并代币
-			while true; do
-				read -p "请输入转出钱包地址（输入1618结束）： " sub_wallet
-				if [ "$sub_wallet" = "1618" ]; then
-					echo "退出循环"
-					break
-				fi
-				echo "要合并的地址为：${GREEN}$sub_wallet${NC}"
-				./qclient-2.0.2.3-linux-amd64 token merge $sub_wallet --config $CONFIG_PATH
-				echo -e "合并完成，请输入下一个地址。"
-			done
-
-			echo "完成合并，5分钟后请到：https://quilibrium.com/bridge 查询。"
-			
-            ;;
-        *)
-            echo "取消操作。"
-            ;;
-    esac
+	echo "开始合并..."
+	stop_node
+	switch_rpc "1"
+	CONFIG_PATH=$HOME/ceremonyclient/node/.config
+	cd $HOME/ceremonyclient/client
+	coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
+	#./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token merge
+	./qclient-2.0.2.3-linux-amd64 token merge $sub_wallet --config $CONFIG_PATH
+	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
 # 合并检查
-function coins_pre_merge(){
+function check_pre_merge(){
+	echo ""
 	echo -e "本操作请在${RED}主钱包机器上${NC}执行。"
 	check_balance
 	echo "上述查询中：balance和COINS都有值，且均大于0，才能归集，否则还需要等待继续铸造。"
+	echo "本操作会把转账机器的代币合并到本机，会用到转账结束后输出的COINS地址。"
+	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将转移到本机的代币合并到本机主钱包。"
 	read -r -p "请确认：[Y/N]" response
     case "$response" in
         [yY][eE][sS]|[yY]) 
@@ -699,8 +674,8 @@ function main_menu() {
 		#echo "12. 运行1.4.21.1程序 start_node_14211"
 		#echo "13. 监控同步状态 qnode_check_for_frames"
 		echo "14. 铸造进度 mining_status"
-		#echo "15. 代币转账 check_pre_transfer"
-		#echo "16. 代币合并 coins_pre_merge"
+		#echo "15. 代币转账(子钱包运行) check_pre_transfer"
+		#echo "16. 代币合并(主钱包运行) check_pre_merge"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -720,6 +695,8 @@ function main_menu() {
 		12) start_node_14211 ;;
 		13) qnode_check_for_frames ;;
 		14) mining_status ;;
+		15) check_pre_transfer ;;
+		16) check_pre_merge ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
