@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241101001
+current_version=20241101002
 
 # Colors for output
 RED='\033[0;31m'
@@ -588,8 +588,8 @@ function coins_transfer(){
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
-	coins_addr=$(./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
-	./qclient-2.0.2.3-linux-amd64 token transfer $main_wallet $coins_addr --config $CONFIG_PATH
+	coins_addr=$(./qclient-2.0.2.4-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
+	./qclient-2.0.2.4-linux-amd64 token transfer $main_wallet $coins_addr --config $CONFIG_PATH
 	echo "转移完成，请到主钱包中运行脚本16进行合并。"
 }
 
@@ -620,7 +620,7 @@ function coins_merge(){
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
-	./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.2.3-linux-amd64 --config $CONFIG_PATH token merge
+	./qclient-2.0.2.4-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.2.4-linux-amd64 --config $CONFIG_PATH token merge
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
