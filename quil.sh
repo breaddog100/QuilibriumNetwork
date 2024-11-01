@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241031008
+current_version=20241001001
 
 # Colors for output
 RED='\033[0;31m'
@@ -265,9 +265,9 @@ function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node
 	echo "查询余额："
-	./../client/qclient-2.0.2.3-linux-amd64 token balance
+	./../client/qclient-2.0.2.4-linux-amd64 token balance
 	echo "查询UTXO："
-	./../client/qclient-2.0.2.3-linux-amd64 token coins
+	./../client/qclient-2.0.2.4-linux-amd64 token coins
 }
 
 # 安装gRPC
@@ -651,7 +651,6 @@ function main_menu() {
 		echo "当前版本：$current_version"
 		echo "沟通电报群：https://t.me/lumaogogogo"
 		echo "推荐配置：12C24G300G;CPU核心越多越好"
-		echo "查询余额请先运行【安装gRPC】只需运行一次，安装后等待30分钟再查询"
 		echo "Contabo机器如果无法安装请先运行【修复contabo】"
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
