@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111003
+current_version=20241111004
 
 # Colors for output
 RED='\033[0;31m'
@@ -567,19 +567,28 @@ function mining_status(){
 # 切换RPC
 function switch_rpc(){
 	cd $HOME/ceremonyclient/node/.config/ || exit
-	if [ "$1" = "1" ]; then
-        echo "切换为公共RPC"
-		sed -i 's|listenGrpcMultiaddr: "/ip4/127.0.0.1/tcp/8337"|listenGrpcMultiaddr: ""|' config.yml
-		sed -i 's|listenRESTMultiaddr: "/ip4/127.0.0.1/tcp/8338"|listenRESTMultiaddr: ""|' config.yml
-    elif [ "$1" = "0" ]; then
-        echo "切换为自有RPC"
-		sed -i 's|listenGrpcMultiaddr: ""|listenGrpcMultiaddr: "/ip4/127.0.0.1/tcp/8337"|' config.yml
-		sed -i 's|listenRESTMultiaddr: ""|listenRESTMultiaddr: "/ip4/127.0.0.1/tcp/8338"|' config.yml
-		stop_node
-		start_node
-    else
-        echo "切换RPC参数错误"
-    fi
+	# 文件路径
+	FILE="config.yml"
+
+	# 判断文件是否存在
+	if [ -f "$FILE" ]; then
+		if [ "$1" = "1" ]; then
+			echo "切换为公共RPC"
+			sed -i 's|listenGrpcMultiaddr: "/ip4/127.0.0.1/tcp/8337"|listenGrpcMultiaddr: ""|' config.yml
+			sed -i 's|listenRESTMultiaddr: "/ip4/127.0.0.1/tcp/8338"|listenRESTMultiaddr: ""|' config.yml
+		elif [ "$1" = "0" ]; then
+			echo "切换为自有RPC"
+			sed -i 's|listenGrpcMultiaddr: ""|listenGrpcMultiaddr: "/ip4/127.0.0.1/tcp/8337"|' config.yml
+			sed -i 's|listenRESTMultiaddr: ""|listenRESTMultiaddr: "/ip4/127.0.0.1/tcp/8338"|' config.yml
+			stop_node
+			start_node
+		else
+			echo "切换RPC参数错误"
+		fi
+	else
+		echo "配置文件不存在，请先启动节点，或检查$HOME/ceremonyclient/node/.config/config.yml是否存在"
+	fi
+	
 }
 
 # 代币转账
