@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111004
+current_version=20241111005
 
 # Colors for output
 RED='\033[0;31m'
@@ -265,7 +265,7 @@ function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node
 	echo "查询余额："
-	./node-2.0.3-linux-amd64 -node-info
+	./node-2.0.3.1-linux-amd64 -node-info
 	#./../client/qclient-2.0.3-linux-amd64 token balance
 	#echo "查询UTXO："
 	#./../client/qclient-2.0.3-linux-amd64 token coins
