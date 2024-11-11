@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111001
+current_version=20241111002
 
 # Colors for output
 RED='\033[0;31m'
@@ -273,25 +273,27 @@ function check_balance(){
 
 # 安装gRPC
 function install_grpc(){
-	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	# 检查当前 Go 版本
-	current_go_version=$(go version | awk '{print $3}')
+	# sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
+	# # 检查当前 Go 版本
+	# current_go_version=$(go version | awk '{print $3}')
 	
-	# 解析版本号并比较
-	if [[ "$current_go_version" < "go1.22.4" ]]; then
-	  # 如果当前版本低于1.22.4，则使用 GVM 安装1.22.4
-	  echo "当前 Go 版本为 $current_go_version，低于1.22.4，开始安装1.22.4版本..."
-	  source $HOME/.gvm/scripts/gvm
-	  gvm install go1.22.4
-	  gvm use go1.22.4 --default
-	else
-	  echo "当前 Go 版本为 $current_go_version，不需要更新。"
-	fi
+	# # 解析版本号并比较
+	# if [[ "$current_go_version" < "go1.22.4" ]]; then
+	#   # 如果当前版本低于1.22.4，则使用 GVM 安装1.22.4
+	#   echo "当前 Go 版本为 $current_go_version，低于1.22.4，开始安装1.22.4版本..."
+	#   source $HOME/.gvm/scripts/gvm
+	#   gvm install go1.22.4
+	#   gvm use go1.22.4 --default
+	# else
+	#   echo "当前 Go 版本为 $current_go_version，不需要更新。"
+	# fi
 
-	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-	wget --no-cache -O - https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
-	stop_node
-	start_node
+	# go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+	# wget --no-cache -O - https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
+	
+	#stop_node
+	#start_node
+	switch_rpc "0" 
 }
 
 # 检查grpc
