@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111005
+current_version=20241111006
 
 # Colors for output
 RED='\033[0;31m'
@@ -264,11 +264,37 @@ function node_info(){
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node
-	echo "查询余额："
-	./node-2.0.3.1-linux-amd64 -node-info
-	#./../client/qclient-2.0.3-linux-amd64 token balance
-	#echo "查询UTXO："
-	#./../client/qclient-2.0.3-linux-amd64 token coins
+	# 定义可执行文件的目录
+	DIR="./"  # 当前目录
+
+	# 初始化最新版本变量和版本字符串
+	latest_version=""
+	latest_file=""
+
+	# 遍历当前目录中的文件
+	for file in "${DIR}"node-*-linux-amd64; do
+		# 检查文件是否存在
+		if [ -f "$file" ]; then
+			# 提取版本号
+			version=$(echo "$file" | sed -E 's/.*node-([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)-linux-amd64/\1/')
+			
+			# 如果找到了版本号，则比较版本
+			if [[ -n "$version" ]]; then
+				# 如果是第一次找到版本，或者找到的版本比当前最新版本更高
+				if [ -z "$latest_version" ] || [ "$(printf '%s\n' "$version" "$latest_version" | sort -V | head -n1)" != "$version" ]; then
+					latest_version="$version"
+					latest_file="$file"
+				fi
+			fi
+		fi
+	done
+	# 输出最新版本的文件
+	if [ -n "$latest_file" ]; then
+		echo "查询余额："
+		./node-2.0.3.1-linux-amd64 -node-info
+	else
+		echo "未找到符合条件的可执行文件。"
+	fi
 }
 
 # 安装gRPC
