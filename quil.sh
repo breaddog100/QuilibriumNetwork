@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111006
+current_version=20241111007
 
 # Colors for output
 RED='\033[0;31m'
@@ -299,7 +299,7 @@ function check_balance(){
 
 # 安装gRPC
 function install_grpc(){
-	# sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
+	 sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	# # 检查当前 Go 版本
 	# current_go_version=$(go version | awk '{print $3}')
 	
