@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111002
+current_version=20241111003
 
 # Colors for output
 RED='\033[0;31m'
