@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241111007
+current_version=20241111008
 
 # Colors for output
 RED='\033[0;31m'
@@ -291,7 +291,7 @@ function check_balance(){
 	# 输出最新版本的文件
 	if [ -n "$latest_file" ]; then
 		echo "查询余额："
-		./node-2.0.3.1-linux-amd64 -node-info
+		"$latest_file" -node-info
 	else
 		echo "未找到符合条件的可执行文件。"
 	fi
