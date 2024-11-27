@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241127002
+current_version=20241127003
 
 # Colors for output
 RED='\033[0;31m'
@@ -199,53 +199,6 @@ function uninstall_node(){
     esac
 }
 
-# 下载快照
-function download_snap(){
-	echo "快照文件较大，下载需要较长时间，请保持电脑屏幕不要熄灭"
-    # 下载快照
-    if wget -P $HOME/ https://snapshots.cherryservers.com/quilibrium/store.zip ;
-    then
-    	# 检查unzip是否已安装
-		if ! command -v unzip &> /dev/null
-		then
-		    # 安装unzip
-		    sudo apt-get update && sudo apt-get install -y unzip
-		    if [ $? -eq 0 ]; then
-		        echo "unzip has been successfully installed."
-		    else
-		        echo "Failed to install unzip. Please check your package manager settings."
-		        exit 1
-		    fi
-		else
-		    echo "unzip is already installed."
-		fi
-        stop_node
-        sudo unzip store.zip -d $HOME/ceremonyclient/node/.config/
-    	start_node
-    	#echo "快照已更新，超过30分钟高度没有增加请运行【10.更新REPAIR】文件"
-    else
-        echo "下载失败。"
-        exit 1
-    fi
-}
-
-# 更新REPAIR
-function update_repair(){
-	echo "快照文件较大，下载需要较长时间，请保持电脑屏幕不要熄灭"
-    # 备份REPAIR
-    stop_node
-    cp $HOME/ceremonyclient/node/.config/REPAIR $HOME/REPAIR.bak
-    # 下载REPAIR
-    if wget -O $HOME/ceremonyclient/node/.config/REPAIR 'https://2040319038-files.gitbook.io/~/files/v0/b/gitbook-x-prod.appspot.com/o/spaces%2FwYHoFaVat0JopE1zxmDI%2Fuploads%2FJL4Ytu5OIWHbisIbZs8v%2FREPAIR?alt=media&token=d080b681-ee26-470c-baae-4723bcf018a3' ;
-    then
-    	start_node
-    	echo "REPAIR已更新..."
-    else
-        echo "下载失败。"
-        exit 1
-    fi
-}
-
 # 节点信息
 function node_info(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
@@ -271,26 +224,7 @@ function check_balance(){
 
 # 安装gRPC
 function install_grpc(){
-	 sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	# # 检查当前 Go 版本
-	# current_go_version=$(go version | awk '{print $3}')
-	
-	# # 解析版本号并比较
-	# if [[ "$current_go_version" < "go1.22.4" ]]; then
-	#   # 如果当前版本低于1.22.4，则使用 GVM 安装1.22.4
-	#   echo "当前 Go 版本为 $current_go_version，低于1.22.4，开始安装1.22.4版本..."
-	#   source $HOME/.gvm/scripts/gvm
-	#   gvm install go1.22.4
-	#   gvm use go1.22.4 --default
-	# else
-	#   echo "当前 Go 版本为 $current_go_version，不需要更新。"
-	# fi
-
-	# go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-	# wget --no-cache -O - https://raw.githubusercontent.com/lamat1111/quilibriumscripts/master/tools/qnode_gRPC_calls_setup.sh | bash
-	
-	#stop_node
-	#start_node
+	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	switch_rpc "0" 
 }
 
@@ -423,64 +357,7 @@ function download_node_and_qclient(){
 	
 }
 
-function start_node_14211(){
-	echo "此功能会先停止当前运行的quil，然后启动1.4.21.1程序。"
-	echo "期间请留意2.0是否能运行，如果能运行则请运行脚本5停止节点，然后脚本6启动脚本即可。"
-	stop_node
-	cd $HOME/ceremonyclient/node/
-	files=(
-	"node-1.4.21.1-linux-amd64"
-	"node-1.4.21.1-linux-amd64.dgst.sig.13"
-	"node-1.4.21.1-linux-amd64.dgst.sig.17"
-	"node-1.4.21.1-linux-amd64.dgst.sig.8"
-	"node-1.4.21.1-linux-amd64.dgst"
-	"node-1.4.21.1-linux-amd64.dgst.sig.15"
-	"node-1.4.21.1-linux-amd64.dgst.sig.2"
-	"node-1.4.21.1-linux-amd64.dgst.sig.9"
-	"node-1.4.21.1-linux-amd64.dgst.sig.1"
-	"node-1.4.21.1-linux-amd64.dgst.sig.16"
-	"node-1.4.21.1-linux-amd64.dgst.sig.3"
-	)
-
-	for file in "${files[@]}"; do
-	if [ -e "$file" ]; then
-		echo "文件 $file 已存在，跳过"
-	else
-		echo "正在下载文件：$file"
-		curl -s -O "https://releases.quilibrium.com/$file"
-	fi
-	done
-
-	sudo chmod +x node-1.4.21.1-linux-amd64
-
-	if systemctl list-unit-files | grep -q 'ceremonyclient14211\.service'; then
-		sudo systemctl start ceremonyclient14211
-	else
-		sudo tee /lib/systemd/system/ceremonyclient14211.service > /dev/null <<EOF
-[Unit]
-Description=Ceremony14211 Client Go App Service
-[Service]
-Type=simple
-Restart=always
-RestartSec=5s
-WorkingDirectory=$HOME/ceremonyclient/node
-Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/ceremonyclient/node/node-1.4.21.1-linux-amd64
-[Install]
-WantedBy=multi-user.target
-EOF
-		sudo systemctl daemon-reload
-		sudo systemctl start ceremonyclient14211
-	fi
-
-	echo "Quil 1.4.21.1 已启动"
-	echo "查看日志：sudo journalctl -u ceremonyclient14211.service -f --no-hostname -o cat"
-	echo "查看余额：cd $HOME/ceremonyclient/node && ./node-1.4.21.1-linux-amd64 -node-info"
-
-}
-
 # 检查frames同步状态
-
 install_dependencies() {
 	local pkg_name
 	echo -e "${YELLOW}安装依赖包：${NC}"
@@ -598,8 +475,9 @@ function coins_transfer(){
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
-	coins_addr=$(./qclient-2.0.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
-	./qclient-2.0.3-linux-amd64 token transfer $main_wallet $coins_addr --config $CONFIG_PATH
+	qclient_file=$(last_bin_file "qclient")
+	coins_addr=$("$qclient_file" --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
+	"$qclient_file" token transfer $main_wallet $coins_addr --config $CONFIG_PATH
 	echo "转移完成，请到主钱包中运行脚本16进行合并。"
 }
 
@@ -630,10 +508,9 @@ function coins_merge(){
 	switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
-	#./qclient-2.0.3-linux-amd64 --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs ./qclient-2.0.3-linux-amd64 --config $CONFIG_PATH token merge
 	qclient_file=$(last_bin_file "qclient")
 	echo $qclient_file
-	"$qclient_file" --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+' | xargs "$qclient_file" --config $CONFIG_PATH token merge
+	"$qclient_file" --config $CONFIG_PATH merge all
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
