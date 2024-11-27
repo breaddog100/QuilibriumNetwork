@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241127003
+current_version=20241127004
 
 # Colors for output
 RED='\033[0;31m'
@@ -510,7 +510,7 @@ function coins_merge(){
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
 	echo $qclient_file
-	"$qclient_file" --config $CONFIG_PATH merge all
+	"$qclient_file" --config $CONFIG_PATH token merge all
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
