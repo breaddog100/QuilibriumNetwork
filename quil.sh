@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241207001
+current_version=20241207002
 
 # Colors for output
 RED='\033[0;31m'
@@ -472,12 +472,12 @@ function coins_transfer(){
 	read -p "请输入主钱包地址(0x开头):" main_wallet
 	echo "开始转移..."
 	stop_node
-	switch_rpc "1"
+	#switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
 	coins_addr=$("$qclient_file" --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
-	"$qclient_file" token transfer $main_wallet $coins_addr --config $CONFIG_PATH
+	"$qclient_file" token transfer $main_wallet $coins_addr --config $CONFIG_PATH --public-rpc
 	echo "转移完成，请到主钱包中运行脚本16进行合并。"
 }
 
