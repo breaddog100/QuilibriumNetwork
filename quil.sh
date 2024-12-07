@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241127004
+current_version=20241207001
 
 # Colors for output
 RED='\033[0;31m'
@@ -504,13 +504,13 @@ function check_pre_transfer(){
 function coins_merge(){
 	# 合并操作
 	echo "开始合并..."
-	stop_node
-	switch_rpc "1"
+	#stop_node
+	#switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
 	echo $qclient_file
-	"$qclient_file" --config $CONFIG_PATH token merge all
+	"$qclient_file" --config $CONFIG_PATH token merge all --public-rpc
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
 
@@ -613,6 +613,7 @@ function main_menu() {
 		echo "Contabo机器如果无法安装请先运行【修复contabo】"
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
+		echo "@defeaty 协助社区解决2.0.4.2国内节点卡块问题"
     	echo "===================桃花潭水深千尺，不及汪伦送我情===================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
