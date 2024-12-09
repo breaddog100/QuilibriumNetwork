@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241209002
+current_version=20241209003
 
 # Colors for output
 RED='\033[0;31m'
@@ -222,6 +222,7 @@ function check_balance(){
 	"$node_file" -node-info
 	cd ~/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
+	echo $qclient_file
 	"$qclient_file" --config $CONFIG_PATH token balance --public-rpc
 
 }
