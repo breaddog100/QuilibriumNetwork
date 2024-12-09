@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241207002
+current_version=20241209001
 
 # Colors for output
 RED='\033[0;31m'
@@ -602,6 +602,88 @@ function last_bin_file(){
     esac
 }
 
+# 集群
+# 生成集群配置文件
+function generator_cluster_config() {
+    echo "按照提示输入集群基本情况，脚本会生成集群的配置文件，将生成的配置文件上传到管理节点和所有的工作节点中"
+    # 输入工作节点数量
+    read -p "请输入工作节点数量: " worker_num
+	# 初始化端口号
+    port_num=40000
+	# 初始化工作节点配置项 替换空格的符号
+	worker_addrs="  dataWorkerMultiaddrs:\n"
+
+    # 校验worker_num类型是否为整数
+    if ! [[ "$worker_num" =~ ^[0-9]+$ ]]; then
+        echo "错误: 工作节点数量必须是一个整数."
+        return 1  # 返回错误代码
+    fi
+
+    # 循环worker_num次，分别输入core_num参数
+    for ((i=1; i<=worker_num; i++)); do
+        read -p "请输入第 $i 个工作节点的 IP 地址: " worker_ip
+		read -p "请输入第 $i 个工作节点的 core_num: " core_num
+		
+        # 可以在这里添加对core_num的校验
+        if ! [[ "$core_num" =~ ^[0-9]+$ ]]; then
+            echo "错误: core_num必须是一个整数."
+            return 1  # 返回错误代码
+        fi
+
+		echo "第 $i 个工作节点 $worker_ip ,核心数: $core_num"
+
+		worker_addrs="$worker_addrs# Node $i - $worker_ip\n"
+
+		for ((j=1; j<=core_num; j++)); do
+			# \t 改为2个空格
+            worker_addrs="$worker_addrs\t- /ip4/$worker_ip/tcp/$port_num\n"
+            port_num=$((port_num+1))
+
+            # 输出 worker_addrs，测试后关闭
+            printf "$worker_addrs"
+
+        done
+        
+    done
+
+	# 将配置项输出到文件
+	echo $worker_addrs>~/config_for_cluster.yml
+    echo "已经生成集群配置文件：config_for_cluster.yml，并保存在当前目录下"
+	echo "请将ceremonyclient/node/.config/config.yml中的dataWorkerMultiaddrs[]替换为config_for_cluster.yml中的内容"
+	echo "切记，修改配置文件前先备份！"
+}
+
+# 启动worker
+function start_worker(){
+	echo "启动worker，启动脚本基于官方社区教程中的脚本修改而成"
+	# 下载启动脚本并启动
+	curl ...
+	node_file=$(last_bin_file "node")
+	./start_cluster.sh --core-index-start $x --data-worker-count $y --node_binary $node_file
+}
+
+# 启动master
+function start_master(){
+	echo "启动master，启动脚本基于官方社区教程中的脚本修改而成"
+	# 下载启动脚本并启动
+	curl ...
+	node_file=$(last_bin_file "node")
+	./start_cluster.sh --core-index-start $x --data-worker-count $y --node_binary $node_file
+}
+
+# 启动cluster
+function start_cluster(){
+	read -r -p "请确定所有的工作节点均已启动：[Y/N] " response
+    case "$response" in
+        [yY][eE][sS]|[yY]) 
+            start_master
+            ;;
+        *)
+            echo "取消操作。"
+            ;;
+    esac
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -653,6 +735,7 @@ function main_menu() {
 		14) mining_status ;;
 		15) check_pre_transfer ;;
 		16) check_pre_merge ;;
+		17) generator_cluster_config ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
