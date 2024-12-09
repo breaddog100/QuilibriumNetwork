@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241209001
+current_version=20241209002
 
 # Colors for output
 RED='\033[0;31m'
@@ -220,6 +220,10 @@ function check_balance(){
 	node_file=$(last_bin_file "node")
 	echo "查询余额："
 	"$node_file" -node-info
+	cd ~/ceremonyclient/client
+	qclient_file=$(last_bin_file "qclient")
+	"$qclient_file" --config $CONFIG_PATH token balance --public-rpc
+
 }
 
 # 安装gRPC
@@ -509,7 +513,6 @@ function coins_merge(){
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
-	echo $qclient_file
 	"$qclient_file" --config $CONFIG_PATH token merge all --public-rpc
 	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
 }
