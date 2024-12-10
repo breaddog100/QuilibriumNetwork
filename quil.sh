@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210006
+current_version=20241210007
 
 # Colors for output
 RED='\033[0;31m'
@@ -555,10 +555,19 @@ function start_worker(){
         return 1
     fi
 
-	# 下载启动脚本
-	update_url="https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh"
-    file_name=$(basename "$update_url")
-	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
+	# 下载集群启动脚本
+	if [ -f "./start-cluster.sh" ]; then
+		echo "文件 start-cluster.sh 已存在."
+	else
+		echo "文件 start-cluster.sh 不存在，正在下载..."
+		# 下载文件
+		curl -O https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh
+		if [ $? -eq 0 ]; then
+			echo "文件下载完成."
+		else
+			echo "下载失败."
+		fi
+	fi
 
 	node_file=$(last_bin_file "node")
 	node_file_no_dot="${node_file#./}"
@@ -611,10 +620,19 @@ function start_master(){
         return 1
     fi
 
-	# 下载启动脚本
-	update_url="https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh"
-    file_name=$(basename "$update_url")
-	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
+	# 下载集群启动脚本
+	if [ -f "./start-cluster.sh" ]; then
+		echo "文件 start-cluster.sh 已存在."
+	else
+		echo "文件 start-cluster.sh 不存在，正在下载..."
+		# 下载文件
+		curl -O https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh
+		if [ $? -eq 0 ]; then
+			echo "文件下载完成."
+		else
+			echo "下载失败."
+		fi
+	fi
 
 	node_file=$(last_bin_file "node")
 	node_file_no_dot="${node_file#./}"
