@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210003
+current_version=20241210004
 
 # Colors for output
 RED='\033[0;31m'
@@ -201,8 +201,13 @@ function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	cd ~/ceremonyclient/node
 	node_file=$(last_bin_file "node")
-	echo "查询余额："
+	echo "本地余额："
 	"$node_file" -node-info
+	echo "链上余额："
+	CONFIG_PATH=$HOME/ceremonyclient/node/.config
+	cd $HOME/ceremonyclient/client
+	qclient_file=$(last_bin_file "qclient")
+	"$qclient_file" --config $CONFIG_PATH --public-rpc token balance
 }
 
 # 安装gRPC
@@ -350,8 +355,6 @@ function coins_transfer(){
 	# 转出操作
 	read -p "请输入主钱包地址(0x开头):" main_wallet
 	echo "开始转移..."
-	stop_node
-	#switch_rpc "1"
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
@@ -381,24 +384,20 @@ function check_pre_transfer(){
 # 代币合并
 function coins_merge(){
 	# 合并操作
-	echo "开始合并..."
-	#stop_node
-	#switch_rpc "1"
+	echo "开始合并："
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
-	"$qclient_file" --config $CONFIG_PATH token merge all --public-rpc
-	echo "完成合并，请到：https://quilibrium.com/bridge 查询。"
+	
+	"$qclient_file" --config $CONFIG_PATH --public-rpc token merge all
+	echo "完成合并，10分钟后请到：https://quilibrium.com/bridge 查询。"
 }
 
 # 合并检查
 function check_pre_merge(){
-	echo ""
-	echo -e "本操作请在${RED}主钱包机器上${NC}执行。"
+
 	check_balance
-	echo "上述查询中：balance和COINS都有值，且均大于0，才能归集，否则还需要等待继续铸造。"
-	echo "本操作会把转账机器的代币合并到本机，会用到转账结束后输出的COINS地址。"
-	echo "接下来脚本会：1，停止本机节点；2，切换到公共RPC；3，将转移到本机的代币合并到本机主钱包。"
+	echo "本操作会把所有COINS地址合并到一起"
 	read -r -p "请确认：[Y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
@@ -480,7 +479,7 @@ function last_bin_file(){
 # 集群
 # 生成集群配置文件
 function generator_cluster_config() {
-    echo "按照提示输入集群基本情况，脚本会生成集群的配置文件，将生成的配置文件上传到管理节点和所有的工作节点中"
+    echo "按照提示输入集群基本情况，脚本会生成集群的配置文件"
     # 输入工作节点数量
     read -p "请输入工作节点数量: " worker_num
     # 初始化端口号
