@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210002
+current_version=20241210003
 
 # Colors for output
 RED='\033[0;31m'
@@ -130,7 +130,7 @@ EOF
     #sudo systemctl start ceremonyclient
 
 	# building grpcurl
-	cd ~
+	cd ~ || exit
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
 	echo "部署完成，选择启动节点即可开始运行"
 }
@@ -139,7 +139,7 @@ EOF
 function backup_key(){
     # 文件路径
     sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-    cd $HOME/ceremonyclient/node/
+    cd $HOME/ceremonyclient/node/ || exit
     # 检查是否安装了zip
 	if ! command -v zip &> /dev/null; then
 	    echo "zip is not installed. Installing now..."
@@ -511,7 +511,7 @@ function generator_cluster_config() {
         echo "第 $i 个工作节点 $worker_ip ,worker数: $core_num"
 
         # 拼接工作节点信息
-        worker_addrs+="  # Node $i - $worker_ip $core_index_start $core_num\n"
+        worker_addrs+="  # Node $i - $worker_ip [$core_index_start,$core_num]\n"
 
         for ((j=1; j<=core_num; j++)); do
             # 将端口号与IP地址结合
@@ -540,43 +540,102 @@ function start_worker(){
     fi
 
     # 从 config_for_cluster.yml 文件中提取信息
-    result=$(grep -A 1 "$worker_ip" ~/config_for_cluster.yml)
+    result=$(grep -E "#.*$worker_ip" ~/config_for_cluster.yml)
 
     if [[ -z "$result" ]]; then
-        echo "错误: 找不到 $worker_ip 节点的配置，请使用此脚本重新生成配置。"
+        echo "错误: 找不到与 IP 地址 $worker_ip 相关的配置."
         return 1
     fi
 
-    # 提取核心索引和核心数
-    core_info=$(echo "$result" | grep -Eo '[0-9]+ [0-9]+')
-
-    if [[ -z "$core_info" ]]; then
-        echo "错误: 无法从配置中提取核心信息，请使用此脚本重新生成配置。"
+    # 使用正则表达式提取 [x,y] 中的数字
+    if [[ "$result" =~ \[([0-9]+),([0-9]+)\] ]]; then
+        x="${BASH_REMATCH[1]}"
+        y="${BASH_REMATCH[2]}"
+    else
+        echo "错误: 无法从配置中提取核心信息."
         return 1
     fi
 
-    # 将提取的核心信息赋值给 x 和 y
-    read -r x y <<< "$core_info"
-    
-    echo "核心索引 x: $x"
-    echo "核心数 y: $y"
 	# 下载启动脚本
 	update_url="https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh"
     file_name=$(basename "$update_url")
 	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
 
 	node_file=$(last_bin_file "node")
-	echo $node_file
-	#./start_cluster.sh --core-index-start $x --data-worker-count $y --node_binary $node_file
+	#./start_cluster.sh --op worker --core-index-start $x --data-worker-count $y --node_binary $node_file
+	sudo tee /lib/systemd/system/quil_worker.service > /dev/null <<EOF
+[Unit]
+Description=Ceremony Client Go App Service
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=$HOME/ceremonyclient/node
+Environment=GOEXPERIMENT=arenas
+ExecStart=$HOME/start-cluster.sh --op worker --core-index-start $x --data-worker-count $y --node_binary $node_file
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable quil_worker
+    sudo systemctl start quil_worker
 }
 
 # 启动master
 function start_master(){
 	echo "启动master，启动脚本基于官方社区教程中的脚本修改而成"
-	# 下载启动脚本并启动
-	curl ...
+	read -p "请输入此节点的 IP 地址: " worker_ip
+
+	# 校验输入的 IP 地址
+    if ! is_valid_ip "$worker_ip"; then
+        echo "错误: 输入的 IP 地址 $worker_ip 无效."
+        return 1
+    fi
+
+    # 从 config_for_cluster.yml 文件中提取信息
+    result=$(grep -E "#.*$worker_ip" ~/config_for_cluster.yml)
+
+    if [[ -z "$result" ]]; then
+        echo "错误: 找不到与 IP 地址 $worker_ip 相关的配置."
+        return 1
+    fi
+
+    # 使用正则表达式提取 [x,y] 中的数字
+    if [[ "$result" =~ \[([0-9]+),([0-9]+)\] ]]; then
+        x="${BASH_REMATCH[1]}"
+        y="${BASH_REMATCH[2]}"
+    else
+        echo "错误: 无法从配置中提取核心信息."
+        return 1
+    fi
+
+	# 下载启动脚本
+	update_url="https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh"
+    file_name=$(basename "$update_url")
+	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
+
 	node_file=$(last_bin_file "node")
-	./start_cluster.sh --core-index-start $x --data-worker-count $y --node_binary $node_file
+	#./start_cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file
+	sudo tee /lib/systemd/system/quil_master.service > /dev/null <<EOF
+[Unit]
+Description=Ceremony Client Go App Service
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=$HOME/ceremonyclient/node
+Environment=GOEXPERIMENT=arenas
+ExecStart=$HOME/start-cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable quil_master
+    sudo systemctl start quil_master
 }
 
 # 启动cluster
@@ -585,6 +644,7 @@ function start_cluster(){
     case "$response" in
         [yY][eE][sS]|[yY]) 
             start_master
+			echo "集群已启动"
             ;;
         *)
             echo "取消操作。"
@@ -605,6 +665,26 @@ function is_valid_ip() {
     return 1  # IP 地址无效
 }
 
+# worker日志
+function worker_logs(){
+	sudo journalctl -u quil_worker.service -f --no-hostname -o cat
+}
+
+# worker状态
+function worker_status(){
+	sudo systemctl status quil_worker
+}
+
+# master日志
+function master_logs(){
+	sudo journalctl -u quil_master.service -f --no-hostname -o cat
+}
+
+# master状态
+function master_status(){
+	sudo systemctl status quil_master
+}
+
 # 主菜单
 function main_menu() {
 	while true; do
@@ -617,6 +697,7 @@ function main_menu() {
 		echo "感谢以下无私的分享者："
     	echo "yann 协助社区升级1.4.18-p2"
 		echo "@defeaty 协助社区解决2.0.4.2国内节点卡块问题"
+		echo "@Mjj998 协助社区解决集群启动问题"
     	echo "===================桃花潭水深千尺，不及汪伦送我情===================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
@@ -636,6 +717,13 @@ function main_menu() {
 		echo "16. 代币合并(在主钱包运行) check_pre_merge"
 		#echo "-----------------------------集群方案-----------------------------"
 		#echo "17. 生成配置 generator_cluster_config"
+		#echo "18. 启动worker start_worker"
+		#echo "19. worker状态 worker_status"
+		#echo "20. worker日志 worker_logs"
+		#echo "21. 启动集群 start_cluster"
+		#echo "22. 集群状态 master_status"
+		#echo "23. 集群日志 master_logs"
+		#echo "24. 集群余额 check_balance"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -658,6 +746,12 @@ function main_menu() {
 		16) check_pre_merge ;;
 		17) generator_cluster_config ;;
 		18) start_worker ;;
+		19) worker_status ;;
+		20) worker_logs ;;
+		21) start_cluster ;;
+		22) master_status ;;
+		23) master_logs ;;
+		24) check_balance ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
