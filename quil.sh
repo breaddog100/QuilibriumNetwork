@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210005
+current_version=20241210006
 
 # Colors for output
 RED='\033[0;31m'
@@ -561,7 +561,8 @@ function start_worker(){
 	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
 
 	node_file=$(last_bin_file "node")
-	#./start_cluster.sh --op worker --core-index-start $x --data-worker-count $y --node_binary $node_file
+	node_file_no_dot="${node_file#./}"
+	#./start_cluster.sh --op worker --core-index-start $x --data-worker-count $y --node_binary $node_file_no_dot
 	sudo tee /lib/systemd/system/quil_worker.service > /dev/null <<EOF
 [Unit]
 Description=Ceremony Client Go App Service
@@ -571,7 +572,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/start-cluster.sh --op worker --core-index-start $x --data-worker-count $y --node_binary $node_file
+ExecStart=$HOME/start-cluster.sh --op worker --core-index-start $x --data-worker-count $y --node_binary $node_file_no_dot
 
 [Install]
 WantedBy=multi-user.target
@@ -616,7 +617,8 @@ function start_master(){
 	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
 
 	node_file=$(last_bin_file "node")
-	#./start_cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file
+	node_file_no_dot="${node_file#./}"
+	#./start_cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file_no_dot
 	sudo tee /lib/systemd/system/quil_master.service > /dev/null <<EOF
 [Unit]
 Description=Ceremony Client Go App Service
@@ -626,7 +628,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/start-cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file
+ExecStart=$HOME/start-cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file_no_dot
 
 [Install]
 WantedBy=multi-user.target
