@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210007
+current_version=20241210008
 
 # Colors for output
 RED='\033[0;31m'
@@ -557,12 +557,14 @@ function start_worker(){
 
 	# 下载集群启动脚本
 	if [ -f "./start-cluster.sh" ]; then
+		chmod +x start-cluster.sh
 		echo "文件 start-cluster.sh 已存在."
 	else
 		echo "文件 start-cluster.sh 不存在，正在下载..."
 		# 下载文件
 		curl -O https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh
 		if [ $? -eq 0 ]; then
+			chmod +x start-cluster.sh
 			echo "文件下载完成."
 		else
 			echo "下载失败."
@@ -590,6 +592,7 @@ EOF
     sudo systemctl daemon-reload
     sudo systemctl enable quil_worker
     sudo systemctl start quil_worker
+	echo "worker 已启动..."
 }
 
 # 启动master
@@ -622,12 +625,14 @@ function start_master(){
 
 	# 下载集群启动脚本
 	if [ -f "./start-cluster.sh" ]; then
+		chmod +x start-cluster.sh
 		echo "文件 start-cluster.sh 已存在."
 	else
 		echo "文件 start-cluster.sh 不存在，正在下载..."
 		# 下载文件
 		curl -O https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh
 		if [ $? -eq 0 ]; then
+			chmod +x start-cluster.sh
 			echo "文件下载完成."
 		else
 			echo "下载失败."
@@ -655,6 +660,7 @@ EOF
     sudo systemctl daemon-reload
     sudo systemctl enable quil_master
     sudo systemctl start quil_master
+	echo "master 已启动..."
 }
 
 # 启动cluster

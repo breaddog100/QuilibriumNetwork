@@ -5,8 +5,10 @@ START_CORE_INDEX=1
 DATA_WORKER_COUNT=$(nproc)
 PARENT_PID=$$
 
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # Some variables for paths and binaries
-QUIL_NODE_PATH=$HOME/ceremonyclient/node
+QUIL_NODE_PATH="$SCRIPT_DIR/ceremonyclient/node"
 QUIL_NODE_CONFIG=$QUIL_NODE_PATH/.config/
 NODE_BINARY=node-2.0.5-linux-amd64
 
