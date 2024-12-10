@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210001
+current_version=20241210002
 
 # Colors for output
 RED='\033[0;31m'
@@ -483,10 +483,10 @@ function generator_cluster_config() {
     echo "按照提示输入集群基本情况，脚本会生成集群的配置文件，将生成的配置文件上传到管理节点和所有的工作节点中"
     # 输入工作节点数量
     read -p "请输入工作节点数量: " worker_num
-	# 初始化端口号
+    # 初始化端口号
     port_num=40000
-	# 初始化工作节点配置项 替换空格的符号
-	worker_addrs="  dataWorkerMultiaddrs:\n"
+    # 初始化工作节点配置项
+    worker_addrs="  dataWorkerMultiaddrs:\n"
 
     # 校验worker_num类型是否为整数
     if ! [[ "$worker_num" =~ ^[0-9]+$ ]]; then
@@ -494,47 +494,80 @@ function generator_cluster_config() {
         return 1  # 返回错误代码
     fi
 
+	core_index_start=1
+
     # 循环worker_num次，分别输入core_num参数
     for ((i=1; i<=worker_num; i++)); do
+
         read -p "请输入第 $i 个工作节点的 IP 地址: " worker_ip
-		read -p "请输入第 $i 个工作节点的 core_num: " core_num
-		
+        read -p "请输入第 $i 个工作节点的 worker数: " core_num
+
         # 可以在这里添加对core_num的校验
         if ! [[ "$core_num" =~ ^[0-9]+$ ]]; then
-            echo "错误: core_num必须是一个整数."
+            echo "错误: worker必须是一个整数."
             return 1  # 返回错误代码
         fi
 
-		echo "第 $i 个工作节点 $worker_ip ,核心数: $core_num"
+        echo "第 $i 个工作节点 $worker_ip ,worker数: $core_num"
 
-		worker_addrs="$worker_addrs# Node $i - $worker_ip\n"
+        # 拼接工作节点信息
+        worker_addrs+="  # Node $i - $worker_ip $core_index_start $core_num\n"
 
-		for ((j=1; j<=core_num; j++)); do
-			# \t 改为2个空格
-            worker_addrs="$worker_addrs\t- /ip4/$worker_ip/tcp/$port_num\n"
+        for ((j=1; j<=core_num; j++)); do
+            # 将端口号与IP地址结合
+            worker_addrs+="  - /ip4/$worker_ip/tcp/$port_num\n"
             port_num=$((port_num+1))
-
-            # 输出 worker_addrs，测试后关闭
-            printf "$worker_addrs"
-
+			core_index_start=$((core_index_start+1))
         done
-        
     done
 
-	# 将配置项输出到文件
-	echo $worker_addrs>~/config_for_cluster.yml
+    # 将配置项输出到文件，使用 printf 确保格式正确
+    printf "%b" "$worker_addrs" > ~/config_for_cluster.yml
     echo "已经生成集群配置文件：config_for_cluster.yml，并保存在当前目录下"
-	echo "请将ceremonyclient/node/.config/config.yml中的dataWorkerMultiaddrs[]替换为config_for_cluster.yml中的内容"
-	echo "切记，修改配置文件前先备份！"
+    echo "请将ceremonyclient/node/.config/config.yml中的dataWorkerMultiaddrs[]替换为config_for_cluster.yml中的内容"
+    echo "切记，修改配置文件前先备份！"
 }
 
 # 启动worker
 function start_worker(){
 	echo "启动worker，启动脚本基于官方社区教程中的脚本修改而成"
-	# 下载启动脚本并启动
-	curl ...
+	read -p "请输入此节点的 IP 地址: " worker_ip
+
+	# 校验输入的 IP 地址
+    if ! is_valid_ip "$worker_ip"; then
+        echo "错误: 输入的 IP 地址 $worker_ip 无效."
+        return 1
+    fi
+
+    # 从 config_for_cluster.yml 文件中提取信息
+    result=$(grep -A 1 "$worker_ip" ~/config_for_cluster.yml)
+
+    if [[ -z "$result" ]]; then
+        echo "错误: 找不到 $worker_ip 节点的配置，请使用此脚本重新生成配置。"
+        return 1
+    fi
+
+    # 提取核心索引和核心数
+    core_info=$(echo "$result" | grep -Eo '[0-9]+ [0-9]+')
+
+    if [[ -z "$core_info" ]]; then
+        echo "错误: 无法从配置中提取核心信息，请使用此脚本重新生成配置。"
+        return 1
+    fi
+
+    # 将提取的核心信息赋值给 x 和 y
+    read -r x y <<< "$core_info"
+    
+    echo "核心索引 x: $x"
+    echo "核心数 y: $y"
+	# 下载启动脚本
+	update_url="https://raw.githubusercontent.com/breaddog100/QuilibriumNetwork/main/start-cluster.sh"
+    file_name=$(basename "$update_url")
+	curl -s -o "$HOME" -H "Cache-Control: no-cache" "$update_url"
+
 	node_file=$(last_bin_file "node")
-	./start_cluster.sh --core-index-start $x --data-worker-count $y --node_binary $node_file
+	echo $node_file
+	#./start_cluster.sh --core-index-start $x --data-worker-count $y --node_binary $node_file
 }
 
 # 启动master
@@ -557,6 +590,19 @@ function start_cluster(){
             echo "取消操作。"
             ;;
     esac
+}
+
+function is_valid_ip() {
+    local ip="$1"
+    # 使用正则表达式检查 IP 地址的格式
+    if [[ $ip =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+        # 验证每个数字是否在 0-255 范围内
+        IFS='.' read -r i1 i2 i3 i4 <<< "$ip"
+        if (( i1 <= 255 && i2 <= 255 && i3 <= 255 && i4 <= 255 )); then
+            return 0  # IP 地址有效
+        fi
+    fi
+    return 1  # IP 地址无效
 }
 
 # 主菜单
@@ -611,6 +657,7 @@ function main_menu() {
 		15) check_pre_transfer ;;
 		16) check_pre_merge ;;
 		17) generator_cluster_config ;;
+		18) start_worker ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
