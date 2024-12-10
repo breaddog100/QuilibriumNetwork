@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241209004
+current_version=20241210001
 
 # Colors for output
 RED='\033[0;31m'
@@ -127,15 +127,12 @@ EOF
 
     sudo systemctl daemon-reload
     sudo systemctl enable ceremonyclient
-    sudo systemctl start ceremonyclient
+    #sudo systemctl start ceremonyclient
 
-	rm $HOME/go/bin/qclient
-	cd $HOME/ceremonyclient/client
-	GOEXPERIMENT=arenas go build -o $HOME/go/bin/qclient main.go
 	# building grpcurl
 	cd ~
 	go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-	echo "部署完成"
+	echo "部署完成，选择启动节点即可开始运行"
 }
 
 # 备份节点
@@ -199,20 +196,6 @@ function uninstall_node(){
     esac
 }
 
-# 节点信息
-function node_info(){
-	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
-	check_grpc
-	cd ~/ceremonyclient/node
-    current_time=$(date "+%Y-%m-%d %H:%M:%S")
-	output=$(./node-2.0.0.7-linux-amd64 -node-info)
-	peerid=$(echo "$output" | awk '/Peer ID:/ {print $3}')
-	balance=$(echo "$output" | awk '/Owned balance:/ {print $3, $4}')
-	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
-	./node-2.0.0.7-linux-amd64 -node-info
-	echo "查询时间:$current_time,PeerID:$peerid,CPU使用率:$cpu_usage%,当前余额:$balance"
-}
-
 # 查询余额
 function check_balance(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
@@ -220,39 +203,12 @@ function check_balance(){
 	node_file=$(last_bin_file "node")
 	echo "查询余额："
 	"$node_file" -node-info
-	cd ~/ceremonyclient/client
-	qclient_file=$(last_bin_file "qclient")
-	echo $qclient_file
-	"$qclient_file" --config $CONFIG_PATH token coins --public-rpc
-
 }
 
 # 安装gRPC
 function install_grpc(){
 	sudo chown -R $USER:$USER $HOME/ceremonyclient/node/.config/
 	switch_rpc "0" 
-}
-
-# 检查grpc
-check_grpc() {
-	cpu_usage=$(top -bn 1 | grep "%Cpu(s)" | awk '{print $2}')
-	if (( $(echo "$cpu_usage > 80" | bc -l) )); then
-		echo "quil已启动"
-		if ! sudo lsof -i :8337 > /dev/null; then
-			echo "grpc未启用，正在安装"
-			install_grpc
-		fi
-	else
-		echo "quil未启动"
-		start_node
-	fi
-    
-}
-
-# 健康状态
-function check_heal(){
-	sudo journalctl -u ceremonyclient.service --no-hostname --since "today" | awk '/"current_frame"/ {print $1, $2, $3, $7}'
-	echo "提取了当天的日志，如果current_frame一直在增加，说明程序运行正常"
 }
 
 # 限制CPU使用率
@@ -362,88 +318,6 @@ function download_node_and_qclient(){
 	
 }
 
-# 检查frames同步状态
-install_dependencies() {
-	local pkg_name
-	echo -e "${YELLOW}安装依赖包：${NC}"
-	sudo apt update -qq
-	
-	for pkg_name in "jq" "bc" "cron"; do
-		if ! sudo apt install -y "$pkg_name"; then
-			echo -e "${RED}安装失败 $pkg_name${NC}"
-			return 1
-		fi
-		echo -e "${GREEN}$pkg_name 安装成功${NC}"
-	done
-	
-	echo
-	sleep 1
-	return 0
-}
-
-function qnode_check_for_frames(){
-
-	echo -e "${GREEN}此功能会监控同步状态，如果超过60分钟没有同步则会重启节点${NC}"
-	sleep 5
-
-	FILE="${HOME}/scripts/qnode_check_for_frames.sh"
-
-	if [ -f "$FILE" ]; then
-		CRON_JOB="*/60 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh"
-
-		if crontab -l | grep -qF "$CRON_JOB"; then
-			:
-		else
-			(crontab -l 2>/dev/null; echo "*/60 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
-		fi
-		echo "已设置每隔60分钟检查一次同步状态"
-		
-	else
-		echo "正在停止节点..."
-		stop_node
-		download_node_and_qclient
-		mkdir -p ~/scripts
-
-		# Install dependencies
-		if ! install_dependencies; then
-			exit 1
-		fi
-		if ! curl -sSL "https://raw.githubusercontent.com/lamat1111/QuilibriumScripts/main/test/qnode_check_for_frames.sh" -o ~/scripts/qnode_check_for_frames.sh; then
-			echo -e "${RED}脚本下载失败${NC}"
-			exit 1
-		fi
-		echo -e "${GREEN}脚本下载成功${NC}"
-		echo
-		sleep 1
-		if ! chmod +x ~/scripts/qnode_check_for_frames.sh; then
-			echo -e "${RED}Failed to make script executable${NC}"
-			exit 1
-		fi
-		(crontab -l 2>/dev/null; echo "*/60 * * * * sudo ${HOME}/scripts/qnode_check_for_frames.sh") | crontab -
-		start_node
-
-		echo -e "${GREEN}已设置为每隔60分钟检查一次同步状态，如果未同步则会重启节点，运行情况请查看日志文件：${HOME}/scripts/logs/qnode_check_for_frames.log${NC}"
-		
-	fi
-}
-
-# 铸造进度
-function mining_status(){
-	# 获取最后一条日志记录中包含 "increment" 的行
-	last_log=$(journalctl -u ceremonyclient.service --no-hostname -g "increment" -r -n 1)
-
-	# 提取 increment 的值
-	increment=$(echo "$last_log" | grep -o '"increment":[0-9]*' | awk -F: '{print $2}')
-
-	# 判断 increment 的值并输出相应的信息
-	if [ "$increment" -eq 0 ]; then
-		echo "已完成铸造，请使用如下钱包地址到网站查询余额，如果余额为0，说明还未同步到本地。"
-		check_balance
-	else
-		echo "正在铸造，increment：$increment"
-	fi
-}
-
 # 切换RPC
 function switch_rpc(){
 	cd $HOME/ceremonyclient/node/.config/ || exit
@@ -491,7 +365,6 @@ function check_pre_transfer(){
 	echo ""
 	echo "请先到主钱包机器获取主钱包地址(运行脚本14会看到0x开头的地址)"
 	echo -e "${RED}本操作会把本机的代币转到你的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！${NC}"
-
 	check_balance
 	echo "上述查询中：balance和COINS都有值，且均大于0，才能转账，否则还需要等待继续铸造。"
 	read -r -p "请确认：[Y/N] " response
@@ -557,7 +430,6 @@ function last_bin_file(){
 				if [ -f "$file" ]; then
 					# 提取版本号
 					version=$(echo "$file" | sed -E 's/.*node-([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)-linux-amd64/\1/')
-					
 					# 如果找到了版本号，则比较版本
 					if [[ -n "$version" ]]; then
 						# 如果是第一次找到版本，或者找到的版本比当前最新版本更高
@@ -586,7 +458,6 @@ function last_bin_file(){
 				if [ -f "$file" ]; then
 					# 提取版本号
 					version=$(echo "$file" | sed -E 's/.*qclient-([0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?)-linux-amd64/\1/')
-					
 					# 如果找到了版本号，则比较版本
 					if [[ -n "$version" ]]; then
 						# 如果是第一次找到版本，或者找到的版本比当前最新版本更高
@@ -692,7 +563,7 @@ function start_cluster(){
 function main_menu() {
 	while true; do
 	    clear
-	    echo "===================Quilibrium Network一键部署脚本==================="
+	    echo "==================Quilibrium Network一键部署脚本=================="
 		echo "当前版本：$current_version"
 		echo "沟通电报群：https://t.me/lumaogogogo"
 		echo "推荐配置：12C24G300G;CPU核心越多越好"
@@ -714,10 +585,11 @@ function main_menu() {
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
 		echo "12. 公共RPC switch_rpc"
-		#echo "13. 监控同步状态 qnode_check_for_frames"
 		echo "14. 铸造进度 mining_status"
 		echo "15. 代币转账(在子钱包运行) check_pre_transfer"
 		echo "16. 代币合并(在主钱包运行) check_pre_merge"
+		#echo "-----------------------------集群方案-----------------------------"
+		#echo "17. 生成配置 generator_cluster_config"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -735,7 +607,6 @@ function main_menu() {
 	    10) install_grpc ;;
 	    11) contabo ;;
 		12) switch_rpc "1" ;;
-		13) qnode_check_for_frames ;;
 		14) mining_status ;;
 		15) check_pre_transfer ;;
 		16) check_pre_merge ;;
