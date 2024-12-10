@@ -68,9 +68,6 @@ fi
 
 MASTER_PID=0
 
-# kill off any stragglers
-pkill node-*
-
 start_master() {
     cd $QUIL_NODE_PATH
     ./$NODE_BINARY &
@@ -98,19 +95,3 @@ if [[ "$OP" == "worker" ]]; then
     else
         echo "无效操作"
 fi
-
-is_master_process_running() {
-    ps -p $MASTER_PID > /dev/null 2>&1
-    return $?
-}
-
-while true
-do
-  # we only care about restarting the master process because the cores should be alive 
-  # as long as this file is running (and this will only run on the machine with a start index of 1)
-  if [ $START_CORE_INDEX -eq 1 ] && ! is_master_process_running; then
-    echo "管理进程挂了，正在重启..."
-    start_master
-  fi
-  sleep 440
-done

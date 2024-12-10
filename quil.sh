@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210008
+current_version=20241210009
 
 # Colors for output
 RED='\033[0;31m'
@@ -528,7 +528,7 @@ function generator_cluster_config() {
 }
 
 # 启动worker
-function start_worker(){
+function init_worker(){
 	echo "启动worker，启动脚本基于官方社区教程中的脚本修改而成"
 	read -p "请输入此节点的 IP 地址: " worker_ip
 
@@ -590,13 +590,12 @@ WantedBy=multi-user.target
 EOF
 
     sudo systemctl daemon-reload
-    sudo systemctl enable quil_worker
     sudo systemctl start quil_worker
 	echo "worker 已启动..."
 }
 
 # 启动master
-function start_master(){
+function init_master(){
 	echo "启动master，启动脚本基于官方社区教程中的脚本修改而成"
 	read -p "请输入此节点的 IP 地址: " worker_ip
 
@@ -658,17 +657,16 @@ WantedBy=multi-user.target
 EOF
 
     sudo systemctl daemon-reload
-    sudo systemctl enable quil_master
     sudo systemctl start quil_master
 	echo "master 已启动..."
 }
 
 # 启动cluster
-function start_cluster(){
+function init_cluster(){
 	read -r -p "请确定所有的工作节点均已启动：[Y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
-            start_master
+            init_master
 			echo "集群已启动"
             ;;
         *)
@@ -698,6 +696,26 @@ function worker_logs(){
 # worker状态
 function worker_status(){
 	sudo systemctl status quil_worker
+}
+
+# 启动worker
+function worker_start(){
+	sudo systemctl start quil_worker
+}
+
+# 终止worker
+function worker_stop(){
+	sudo systemctl stop quil_worker
+}
+
+# 启动master
+function master_start(){
+	sudo systemctl start quil_master
+}
+
+# 终止master
+function master_stop(){
+	sudo systemctl stop quil_master
 }
 
 # master日志
@@ -740,15 +758,19 @@ function main_menu() {
 		echo "14. 铸造进度 mining_status"
 		echo "15. 代币转账(在子钱包运行) check_pre_transfer"
 		echo "16. 代币合并(在主钱包运行) check_pre_merge"
-		#echo "-----------------------------集群方案-----------------------------"
-		#echo "17. 生成配置 generator_cluster_config"
-		#echo "18. 启动worker start_worker"
-		#echo "19. worker状态 worker_status"
-		#echo "20. worker日志 worker_logs"
-		#echo "21. 启动集群 start_cluster"
-		#echo "22. 集群状态 master_status"
-		#echo "23. 集群日志 master_logs"
-		#echo "24. 集群余额 check_balance"
+		echo "-----------------------------集群方案-----------------------------"
+		echo "17. 生成配置 generator_cluster_config"
+		echo "18. 初始化worker init_worker"
+		echo "19. 启动worker worker_start"
+		echo "20. 停止worker worker_stop"
+		echo "21. worker状态 worker_status"
+		echo "22. worker日志 worker_logs"
+		echo "23. 初始化集群 init_cluster"
+		echo "24. 启动集群 master_start"
+		echo "25. 停止集群 master_stop"
+		echo "26. 集群状态 master_status"
+		echo "27. 集群日志 master_logs"
+		echo "28. 集群余额 check_balance"
 	    echo "1618. 卸载节点 uninstall_node"
 	    echo "0. 退出脚本 exit"
 	    read -p "请输入选项: " OPTION
@@ -770,13 +792,17 @@ function main_menu() {
 		15) check_pre_transfer ;;
 		16) check_pre_merge ;;
 		17) generator_cluster_config ;;
-		18) start_worker ;;
-		19) worker_status ;;
-		20) worker_logs ;;
-		21) start_cluster ;;
-		22) master_status ;;
-		23) master_logs ;;
-		24) check_balance ;;
+		18) init_worker ;;
+		19) worker_start ;;
+		20) worker_stop ;;
+		21) worker_status ;;
+		22) worker_logs ;;
+		23) init_cluster ;;
+		24) master_start ;;
+		25) master_stop ;;
+		26) master_status ;;
+		27) master_logs ;;
+		28) check_balance ;;
 	    1618) uninstall_node ;;
 	    0) echo "退出脚本。"; exit 0 ;;
 	    *) echo "无效选项，请重新输入。"; sleep 3 ;;
