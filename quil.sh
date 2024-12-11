@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241211001
+current_version=20241211002
 
 # Colors for output
 RED='\033[0;31m'
@@ -824,8 +824,11 @@ case "$1" in
     backup)
         backup_key
         ;;
+	init_worker)
+		init_worker "$2"
+		;;
     help)
-        echo "用法: $0 {balance|backup}"
+        echo "用法: $0 {balance|backup|init_worker|help}"
         exit 1
         ;;
     *)
