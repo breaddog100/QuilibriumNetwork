@@ -527,13 +527,17 @@ function generator_cluster_config() {
 
 # 启动worker
 function init_worker(){
-	echo "启动worker，启动脚本基于官方社区教程中的脚本修改而成"
-	read -p "请输入此节点的 IP 地址: " worker_ip
 
-	# 校验输入的 IP 地址
-    if ! is_valid_ip "$worker_ip"; then
-        echo "错误: 输入的 IP 地址 $worker_ip 无效."
-        return 1
+	if [ $# -gt 0 ]; then
+        worker_ip="$1"
+    else
+        echo "启动worker，启动脚本基于官方社区教程中的脚本修改而成"
+		read -p "请输入此节点的 IP 地址: " worker_ip
+		# 校验输入的 IP 地址
+		if ! is_valid_ip "$worker_ip"; then
+			echo "错误: 输入的 IP 地址 $worker_ip 无效."
+			return 1
+		fi
     fi
 
     # 从 config_for_cluster.yml 文件中提取信息
