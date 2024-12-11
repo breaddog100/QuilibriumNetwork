@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241210009
+current_version=20241211001
 
 # Colors for output
 RED='\033[0;31m'
@@ -353,23 +353,21 @@ function switch_rpc(){
 # 代币转账
 function coins_transfer(){
 	# 转出操作
-	read -p "请输入主钱包地址(0x开头):" main_wallet
+	read -p "请输入钱包地址(0x开头):" main_wallet
 	echo "开始转移..."
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
 	coins_addr=$("$qclient_file" --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
 	"$qclient_file" token transfer $main_wallet $coins_addr --config $CONFIG_PATH --public-rpc
-	echo "转移完成，请到主钱包中运行脚本16进行合并。"
+	echo "转移完成"
 }
 
 # 转账检查
 function check_pre_transfer(){
 	echo ""
-	echo "请先到主钱包机器获取主钱包地址(运行脚本14会看到0x开头的地址)"
-	echo -e "${RED}本操作会把本机的代币转到你的主钱包地址中，请务必填写正确的主钱包地址，以防资产损失！${NC}"
+	echo -e "${RED}将本机的代币转到其他钱包中，请确认输入正确的钱包地址，以防资产损失！${NC}"
 	check_balance
-	echo "上述查询中：balance和COINS都有值，且均大于0，才能转账，否则还需要等待继续铸造。"
 	read -r -p "请确认：[Y/N] " response
     case "$response" in
         [yY][eE][sS]|[yY]) 
@@ -741,7 +739,7 @@ function main_menu() {
     	echo "yann 协助社区升级1.4.18-p2"
 		echo "@defeaty 协助社区解决2.0.4.2国内节点卡块问题"
 		echo "@Mjj998 协助社区解决集群启动问题"
-    	echo "===================桃花潭水深千尺，不及汪伦送我情===================="
+    	echo "=================桃花潭水深千尺，不及汪伦送我情=================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
 	    echo "2. 备份节点 backup_key"
@@ -756,8 +754,8 @@ function main_menu() {
 	    echo "11. 修复contabo contabo"
 		echo "12. 公共RPC switch_rpc"
 		echo "14. 铸造进度 mining_status"
-		echo "15. 代币转账(在子钱包运行) check_pre_transfer"
-		echo "16. 代币合并(在主钱包运行) check_pre_merge"
+		echo "15. 代币转账 check_pre_transfer"
+		echo "16. 代币合并 check_pre_merge"
 		echo "-----------------------------集群方案-----------------------------"
 		echo "17. 生成配置 generator_cluster_config"
 		echo "18. 初始化worker init_worker"
