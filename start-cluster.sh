@@ -72,7 +72,7 @@ start_master() {
     cd $QUIL_NODE_PATH
     ./$NODE_BINARY &
     MASTER_PID=$!
-    echo "启动管理节点 $MASTER_PID"
+    echo "启动管理节点 $MASTER_PID ..."
 }
 
 # Loop through the data worker count and start each core
@@ -89,7 +89,7 @@ start_workers() {
 if [[ "$OP" == "worker" ]]; then
         start_workers
     elif [[ "$OP" == "master" ]]; then
-        echo "正在启动管理节点"
+        echo "正在启动管理节点..."
         sleep 30
         start_master
     else

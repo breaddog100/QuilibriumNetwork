@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241211003
+current_version=20241212001
 
 # Colors for output
 RED='\033[0;31m'
@@ -599,30 +599,6 @@ EOF
 # 启动master
 function init_master(){
 	echo "启动master，启动脚本基于官方社区教程中的脚本修改而成"
-	read -p "请输入此节点的 IP 地址: " worker_ip
-
-	# 校验输入的 IP 地址
-    if ! is_valid_ip "$worker_ip"; then
-        echo "错误: 输入的 IP 地址 $worker_ip 无效."
-        return 1
-    fi
-
-    # 从 config_for_cluster.yml 文件中提取信息
-    result=$(grep -E "#.*$worker_ip" ~/ceremonyclient/node/.config/config.yml)
-
-    if [[ -z "$result" ]]; then
-        echo "错误: 找不到与 IP 地址 $worker_ip 相关的配置."
-        return 1
-    fi
-
-    # 使用正则表达式提取 [x,y] 中的数字
-    if [[ "$result" =~ \[([0-9]+),([0-9]+)\] ]]; then
-        x="${BASH_REMATCH[1]}"
-        y="${BASH_REMATCH[2]}"
-    else
-        echo "错误: 无法从配置中提取核心信息."
-        return 1
-    fi
 
 	# 下载集群启动脚本
 	if [ -f "./start-cluster.sh" ]; then
@@ -642,7 +618,7 @@ function init_master(){
 
 	node_file=$(last_bin_file "node")
 	node_file_no_dot="${node_file#./}"
-	#./start_cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file_no_dot
+	#./start_cluster.sh --op master --node_binary $node_file_no_dot
 	sudo tee /lib/systemd/system/quil_master.service > /dev/null <<EOF
 [Unit]
 Description=Ceremony Client Go App Service
@@ -652,7 +628,7 @@ Restart=always
 RestartSec=5s
 WorkingDirectory=$HOME/ceremonyclient/node
 Environment=GOEXPERIMENT=arenas
-ExecStart=$HOME/start-cluster.sh --op master --core-index-start $x --data-worker-count $y --node_binary $node_file_no_dot
+ExecStart=$HOME/start-cluster.sh --op master --node_binary $node_file_no_dot
 
 [Install]
 WantedBy=multi-user.target
@@ -743,6 +719,7 @@ function main_menu() {
     	echo "yann 协助社区升级1.4.18-p2"
 		echo "@defeaty 协助社区解决2.0.4.2国内节点卡块问题"
 		echo "@Mjj998 协助社区解决集群启动问题"
+		echo "@bowille 协助社区弥补集群使用场景"
     	echo "=================桃花潭水深千尺，不及汪伦送我情=================="
 	    echo "请选择要执行的操作:"
 	    echo "1. 部署节点 install_node"
