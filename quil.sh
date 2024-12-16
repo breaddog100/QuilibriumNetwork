@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241212001
+current_version=20241216001
 
 # Colors for output
 RED='\033[0;31m'
@@ -174,8 +174,22 @@ function stop_node(){
 
 # 启动节点
 function start_node(){
-	sudo systemctl start ceremonyclient
-	echo "quil 节点已启动"
+	if [ -f "/lib/systemd/system/quil_master.service" ]; then
+		read -r -p "检查到本机已配置了集群，是否继续启动单节点？"
+		case "$response" in
+			[yY][eE][sS]|[yY]) 
+				sudo systemctl start ceremonyclient
+				echo "quil 节点已启动"
+				;;
+			*)
+				echo "取消操作。"
+				;;
+		esac
+	else
+		sudo systemctl start ceremonyclient
+		echo "quil 节点已启动"
+	fi
+	
 }
 
 # 卸载节点
