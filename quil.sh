@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241221002
+current_version=20241221003
 
 # Colors for output
 RED='\033[0;31m'
@@ -369,7 +369,7 @@ function coins_count(){
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
-	"$qclient_file" --config $CONFIG_PATH --public-rpc token coins
+	"$qclient_file" --config $CONFIG_PATH --public-rpc token coins metadata
 }
 
 # 代币转账
