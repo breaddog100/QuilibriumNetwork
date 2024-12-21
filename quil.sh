@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241221003
+current_version=20241221004
 
 # Colors for output
 RED='\033[0;31m'
@@ -155,7 +155,7 @@ function backup_key(){
 
 # 查看日志
 function view_logs(){
-	sudo journalctl -u ceremonyclient.service -f --no-hostname -o cat
+	sudo journalctl -u ceremonyclient.service -f --no-hostname -o short-iso
 }
 
 # 查看节点状态
@@ -690,7 +690,7 @@ function is_valid_ip() {
 
 # worker日志
 function worker_logs(){
-	sudo journalctl -u quil_worker.service -f --no-hostname -o cat
+	sudo journalctl -u quil_worker.service -f --no-hostname -o short-iso
 }
 
 # worker状态
@@ -720,7 +720,7 @@ function master_stop(){
 
 # master日志
 function master_logs(){
-	sudo journalctl -u quil_master.service -f --no-hostname -o cat
+	sudo journalctl -u quil_master.service -f --no-hostname -o short-iso
 }
 
 # master状态
