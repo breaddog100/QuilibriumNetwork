@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241216002
+current_version=20241221001
 
 # Colors for output
 RED='\033[0;31m'
@@ -364,6 +364,14 @@ function switch_rpc(){
 	
 }
 
+# 出币统计
+function coins_count(){
+	CONFIG_PATH=$HOME/ceremonyclient/node/.config
+	cd $HOME/ceremonyclient/client
+	qclient_file=$(last_bin_file "qclient")
+	"$qclient_file" --config $CONFIG_PATH --public-rpc token coins | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0 }'
+}
+
 # 代币转账
 function coins_transfer(){
 	# 转出操作
@@ -372,7 +380,7 @@ function coins_transfer(){
 	CONFIG_PATH=$HOME/ceremonyclient/node/.config
 	cd $HOME/ceremonyclient/client
 	qclient_file=$(last_bin_file "qclient")
-	coins_addr=$("$qclient_file" --config $CONFIG_PATH token coins | grep -o '0x[0-9a-fA-F]\+')
+	coins_addr=$("$qclient_file" --config $CONFIG_PATH --public-rpc token coins | grep -o '0x[0-9a-fA-F]\+')
 	"$qclient_file" token transfer $main_wallet $coins_addr --config $CONFIG_PATH --public-rpc
 	echo "转移完成"
 }
@@ -748,7 +756,7 @@ function main_menu() {
 	    echo "10. 安装gRPC install_grpc"
 	    echo "11. 修复contabo contabo"
 		echo "12. 公共RPC switch_rpc"
-		echo "14. 铸造进度 mining_status"
+		echo "14. 出币统计 coins_count"
 		echo "15. 代币转账 check_pre_transfer"
 		echo "16. 代币合并 check_pre_merge"
 		echo "-----------------------------集群方案-----------------------------"
@@ -781,7 +789,7 @@ function main_menu() {
 	    10) install_grpc ;;
 	    11) contabo ;;
 		12) switch_rpc "1" ;;
-		14) mining_status ;;
+		14) coins_count ;;
 		15) check_pre_transfer ;;
 		16) check_pre_merge ;;
 		17) generator_cluster_config ;;
