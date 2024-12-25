@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241221004
+current_version=20241225001
 
 # Colors for output
 RED='\033[0;31m'
@@ -563,7 +563,7 @@ function init_worker(){
     fi
 
     # 从 config_for_cluster.yml 文件中提取信息
-    result=$(grep -E "#.*$worker_ip" ~/ceremonyclient/node/.config/config.yml)
+    result=$(grep -E "#.*${worker_ip}(\s|\]|$)" ~/ceremonyclient/node/.config/config.yml)
 
     if [[ -z "$result" ]]; then
         echo "错误: 找不到与 IP 地址 $worker_ip 相关的配置."
