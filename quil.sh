@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 设置版本号
-current_version=20241225001
+current_version=20241225002
 
 # Colors for output
 RED='\033[0;31m'
@@ -813,9 +813,6 @@ function main_menu() {
     done
 }
 
-# 检查更新
-update_script
-
 case "$1" in
     balance)
         check_balance
@@ -834,3 +831,6 @@ case "$1" in
         main_menu
         ;;
 esac
+
+# 检查更新
+update_script
